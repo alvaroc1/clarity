@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Hello World!</title>
+    <meta http-equiv="Content-Security-Policy" content="script-src 'self' 'unsafe-inline' *;" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap" />
+    <style>html, body {margin: 0; padding: 0; height: 100%}</style>
+
+</head>
+<body style="background: white;">
+    <!--
+    <h1>Hello World!</h1>
+    <p>
+        We are using node <script>document.write(process.versions.node)</script>,
+        Chrome <script>document.write(process.versions.chrome)</script>,
+        and Electron <script>document.write(process.versions.electron)</script>.
+    </p>-->
+    <div id='app' style='height: 100%'></div>
+</body>
+
+<script src="http://localhost:8097"></script>
+<script type="module" src="index.js"></script>
+</html>
