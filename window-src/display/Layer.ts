@@ -15,13 +15,9 @@ const classes = jss.createStyleSheet({
 
 export class Layer {
   #label: string
-  #x: number = 0
-  #y: number = 0
-  #width: number = 100
-  #height: number = 100
   #canvas: HTMLCanvasElement
   #ctx: CanvasRenderingContext2D
-  #container: Element
+  #container: HTMLDivElement
   #pathClosed: boolean = true
   #children: Layer[] = []
 
@@ -30,6 +26,7 @@ export class Layer {
   }
 
   private constructor (label: string) {
+    this.#label = label
     const canvas = document.createElement('canvas')
     canvas.width = 200
     canvas.height = 200
@@ -41,11 +38,12 @@ export class Layer {
     container.appendChild(canvas)
 
     const ctx = canvas.getContext('2d')!!
-    ctx.scale(window.devicePixelRatio, window.devicePixelRatio)
+    ctx.transform(3, 0, 0, 3, 0, 0)
+    console.log('SCALING')
+    //ctx.scale(window.devicePixelRatio, window.devicePixelRatio)
     ctx.strokeStyle = '#000000'
     ctx.lineWidth = 5
 
-    this.#label = label
     this.#canvas = canvas
     this.#ctx = ctx
     this.#container = container
@@ -65,6 +63,7 @@ export class Layer {
 
   #startPathIfNecessary = () => {
     if (this.#pathClosed) {
+      console.log("BEGIN PATH")
       this.#ctx.beginPath()
       this.#pathClosed = false
     }
@@ -81,7 +80,7 @@ export class Layer {
   }
 
   start = (x: number, y: number): void => {
-    this.#ctx.beginPath()
+    this.#startPathIfNecessary()
     this.#ctx.moveTo(x, y)
   }
 
@@ -90,6 +89,8 @@ export class Layer {
   }
 
   cstroke = (cap: Cap, join: Join, thickness: number, r: number, g: number, b: number, a: number): void => {
+    this.#ctx.lineWidth = thickness
+    this.#ctx.strokeStyle = "rgba(" + r + "," + g + "," + b + "," + a/255.0 + ")"
     this.#ctx.stroke()
     this.#pathClosed = true
   }
@@ -104,12 +105,22 @@ export class Layer {
     const canvasWidth  = Math.ceil(width  / CANVAS_SIZE_FACTOR) * CANVAS_SIZE_FACTOR
     const canvasHeight = Math.ceil(height / CANVAS_SIZE_FACTOR) * CANVAS_SIZE_FACTOR
 
+    console.log(width)
+    console.log(canvasWidth)
+
     if (this.#canvas.width !== canvasWidth || this.#canvas.height !== canvasHeight) {
       this.#canvas.width = canvasWidth
       this.#canvas.height = canvasHeight
     }
-    this.#width = width
-    this.#height = height
+  }
+
+  move = (x: number, y: number): void => {
+    this.#container.style.left = `${x}px`
+    this.#container.style.top = `${y}px`
+  }
+
+  close = (): void => {
+    this.#ctx.closePath()
   }
 
   mount = (element: Element): void => {
@@ -119,4 +130,6 @@ export class Layer {
   static create = (label: string): Layer => new Layer(label)
 }
 
-const CANVAS_SIZE_FACTOR = 64
+/* What is this? maybe from when trying to draw the othello board */
+//const CANVAS_SIZE_FACTOR = 64
+const CANVAS_SIZE_FACTOR = 1

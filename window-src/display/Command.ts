@@ -28,8 +28,14 @@ export namespace Command {
   export type Size = LayerCmd<'size', [width:number, height:number]>
   export const size = (layer: number, width: number, height: number): Size => ['size', layer, width, height]
 
+  export type Move = LayerCmd<'move', [x:number, height:number]>
+  export const move = (layer: number, x: number, y: number): Move => ['move', layer, x, y]
+
   export type Start = LayerCmd<'start', [x:number, y:number]>
   export const start = (layer: number, x:number, y:number): Start => ['start', layer, x, y]
+
+  export type Close = LayerCmd<'close', []>
+  export const close = (layer: number): Close => ['close', layer]
 
   export type Line = LayerCmd<'line', [x:number, y:number]>
   export const line = (layer: number, x:number, y:number): Line => ['line', layer, x, y]
@@ -38,8 +44,7 @@ export namespace Command {
   export const cstroke = (layer: number, mask: ChannelMask): Cstroke => ['cstroke', mask, layer, Cap.Butt, Join.Bevel, 5, 100, 200, 50, 1]
 
   export type Cfill = LayerPathCompleteCmd<'cfill', [r:number, g:number, b:number, a:number]>
-  export const cfill = (layer: number, mask: ChannelMask, r: number, g: number, b: number, a: number): Cfill => ['cfill', mask, layer, r, g, b, a]
-
+  export const cfill = (layer: number, mask: ChannelMask, r: number, g: number, b: number, a: number): Cfill => ['cfill', mask, layer, r, g, b, a] 
 
   export const parse = (cmdStr: string): Command => {
     const [cmd, ...rest] = cmdStr.trim().split(',')
@@ -47,6 +52,6 @@ export namespace Command {
   }
 }
 
-export type LayerCommand = Command.Arc | Command.Rect | Command.Start | Command.Line | Command.Size
+export type LayerCommand = Command.Arc | Command.Rect | Command.Start | Command.Line | Command.Size | Command.Move | Command.Close
 export type LayerPathCompleteCommand = Command.Cstroke | Command.Cfill
 export type Command = LayerCommand | LayerPathCompleteCommand

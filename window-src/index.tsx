@@ -39,6 +39,7 @@ ReactDOM.render(<App />, document.querySelector('#app'))
 const display = new Display()
 const appDiv = document.getElementById('app')!!
 display.mount(appDiv)
+console.log('index: DISPLAY MOUNT')
 
 appDiv.addEventListener('click', ev => {
   const rect = (ev.target as Element).getBoundingClientRect();

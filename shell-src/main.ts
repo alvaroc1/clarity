@@ -1,6 +1,4 @@
 import { app, BrowserWindow, ipcMain } from 'electron'
-//import * as path from 'path'
-//import * as os from 'os'
 import * as net from 'net'
 import { AsyncQueue } from './util/AsyncQueue'
 import { Session } from './Session'

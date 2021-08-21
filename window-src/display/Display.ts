@@ -14,6 +14,7 @@ export class Display {
   #element = document.createElement('div')
 
   constructor() {
+    console.log("Display: CONSTRUCTOR")
     this.#element.className = classes.display
     this.#defaultLayer.mount(this.#element)
   }
@@ -23,6 +24,8 @@ export class Display {
   }
 
   #getLayer = (idx: number): Layer => {
+    console.log("Display: GET LAYER")
+    console.log(this.#layers)
     /*
     console.log(idx)
     console.log(idx in this.#layers)
@@ -32,6 +35,7 @@ export class Display {
   }
 
   #createLayer = (idx: number): Layer => {
+    console.log("Display: LAYER CREATE")
     const layer = Layer.create(`layer-${idx}`)
     this.#layers[idx] = layer
     this.#defaultLayer.appendChild(layer)
@@ -58,6 +62,8 @@ export class Display {
       case 'arc':
       case 'start':
       case 'line':
+      case 'move':
+      case 'close':
         this.#execLayerCommand(c); 
         break;
 
@@ -80,6 +86,8 @@ export class Display {
       case 'size':  layer.resize(c[2], c[3]); break;
       case 'start': layer.start(c[2], c[3]); break;
       case 'line':  layer.line(c[2], c[3]); break;
+      case 'move': layer.move(c[2], c[3]); break;
+      case 'close': layer.close(); break;
       default: 
         assertUnreachable(c)
     }
@@ -97,7 +105,7 @@ export class Display {
 }
 
 const assertUnreachable = (c: never): void => {
-  console.log('UNREACHABLE')
+  throw ('UNREACHABLE: ' + c)
 }
 /*
 const assertUnreachable = (c: never): never => {

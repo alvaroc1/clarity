@@ -26,12 +26,12 @@
     }
   },
   "devDependencies": {
-    "@electron-forge/cli": "^6.0.0-beta.54",
-    "@electron-forge/maker-deb": "^6.0.0-beta.54",
-    "@electron-forge/maker-dmg": "^6.0.0-beta.54",
-    "@electron-forge/maker-rpm": "^6.0.0-beta.54",
-    "@electron-forge/maker-squirrel": "^6.0.0-beta.54",
-    "@electron-forge/maker-zip": "^6.0.0-beta.54",
+    "@electron-forge/cli": "6.0.0-beta.59",
+    "@electron-forge/maker-deb": "6.0.0-beta.59",
+    "@electron-forge/maker-dmg": "6.0.0-beta.59",
+    "@electron-forge/maker-rpm": "6.0.0-beta.59",
+    "@electron-forge/maker-squirrel": "6.0.0-beta.59",
+    "@electron-forge/maker-zip": "6.0.0-beta.59",
     "@rollup/plugin-commonjs": "^17.0.0",
     "@rollup/plugin-node-resolve": "^11.0.1",
     "@rollup/plugin-replace": "^2.3.4",
