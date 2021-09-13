@@ -18,6 +18,10 @@ export namespace Command {
   type LayerCmd<CommandName extends string, X extends any[]> = [CommandName, number, ...X]
   type LayerPathCompleteCmd<CommandName extends string, X extends any[]> = [CommandName, ChannelMask, number, ...X]
 
+  export type Copy = [_:'copy', srclayer:number, sx:number, sy:number, sw:number, sh:number, cm:ChannelMask, dstlayer: number, dx:number, dy:number]
+  export const copy = (srclayer:number, sx:number, sy:number, sw:number, sh:number, cm:ChannelMask, dstlayer: number, dx:number, dy:number) => 
+    ['copy', srclayer, sx, sy, sw, sh, cm, dstlayer, dx, dy]
+
   export type Arc = LayerCmd<'arc', [x:number, y:number, radius:number, start:number, end:number, negative:number]>
   export const arc = (layer: number, x: number, y: number, radius: number, start: number, end: number, negative: number): Arc =>
     ['arc', layer, x, y, radius, start, end, negative]
@@ -37,8 +41,24 @@ export namespace Command {
   export type Close = LayerCmd<'close', []>
   export const close = (layer: number): Close => ['close', layer]
 
+  export type Push = LayerCmd<'push', []>
+  export const push = (layer: number): Push => ['push', layer]
+
+  export type Pop = LayerCmd<'pop', []>
+  export const pop = (layer: number): Pop => ['pop', layer]
+
+  export type Identity = LayerCmd<'identity', []>
+  export const identity = (layer: number): Identity => ['identity', layer]
+
+  export type Transform = LayerCmd<'transform', [number, number, number, number, number, number]>
+  export const transform = (layer: number, a:number, b:number, c:number, d:number, e:number, f:number): Transform => 
+    ['transform', layer, a, b, c, d, e, f]
+
   export type Line = LayerCmd<'line', [x:number, y:number]>
   export const line = (layer: number, x:number, y:number): Line => ['line', layer, x, y]
+
+  export type Curve = LayerCmd<'curve', [cp1x:number, cp1y:number, cp2x:number, cp2y:number, x:number, y:number]>
+  export const curve = (layer: number, cp1x:number, cp1y:number, cp2x:number, cp2y:number, x:number, y:number): Curve => ['curve', layer, cp1x, cp1y, cp2x, cp2y, x, y]
 
   export type Cstroke = LayerPathCompleteCmd<'cstroke', [cap:Cap, join:Join, thickness:number, r:number, g:number, b:number, a:number]>
   export const cstroke = (layer: number, mask: ChannelMask): Cstroke => ['cstroke', mask, layer, Cap.Butt, Join.Bevel, 5, 100, 200, 50, 1]
@@ -52,6 +72,9 @@ export namespace Command {
   }
 }
 
-export type LayerCommand = Command.Arc | Command.Rect | Command.Start | Command.Line | Command.Size | Command.Move | Command.Close
+export type CanvasCommand = Command.Copy
+
+export type LayerCommand = Command.Arc | Command.Rect | Command.Start | Command.Line | Command.Size | Command.Move | Command.Close | Command.Identity |
+  Command.Transform | Command.Push | Command.Pop | Command.Curve
 export type LayerPathCompleteCommand = Command.Cstroke | Command.Cfill
-export type Command = LayerCommand | LayerPathCompleteCommand
+export type Command = CanvasCommand | LayerCommand | LayerPathCompleteCommand

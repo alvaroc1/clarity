@@ -26,6 +26,7 @@ export namespace Session {
         poller()
       }
       poller()
+      //setTimeout(x => poller(), 5000);
     })
 
     /** 

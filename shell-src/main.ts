@@ -14,7 +14,7 @@ app.on('ready', async event => {
 
   const server = net.createServer(socket => {
     socket.on('data', data => {
-      console.log(`main.ts: Data Received: ${data}`)
+      //console.log(`main.ts: Data Received: ${data}`)
 
       // process command
       data.toString()
@@ -38,7 +38,7 @@ app.on('ready', async event => {
   })
   server.listen(9002)
   server.on('connection', (_: net.Socket) => {
-    console.log('connection')
+    //console.log('connection')
 
     //openWindow().catch(e => console.error(e))
   })

@@ -20,7 +20,7 @@
     ora "^5.0.0"
     pretty-ms "^7.0.0"
 
-"@electron-forge/cli@^6.0.0-beta.59":
+"@electron-forge/cli@6.0.0-beta.59":
   version "6.0.0-beta.59"
   resolved "https://artifactory.twitter.biz:443/api/npm/js-virtual/@electron-forge/cli/-/cli-6.0.0-beta.59.tgz#e6a5d277685037f86eca8da9923d6a3742d282b0"
   integrity sha1-5qXSd2hQN/huyo2pkj1qN0LSgrA=
@@ -151,7 +151,7 @@
     fs-extra "^10.0.0"
     which "^2.0.2"
 
-"@electron-forge/maker-deb@^6.0.0-beta.59":
+"@electron-forge/maker-deb@6.0.0-beta.59":
   version "6.0.0-beta.59"
   resolved "https://artifactory.twitter.biz:443/api/npm/js-virtual/@electron-forge/maker-deb/-/maker-deb-6.0.0-beta.59.tgz#13a20011062a49c2d99f1adf23ce043202ef988c"
   integrity sha1-E6IAEQYqScLZnxrfI84EMgLvmIw=
@@ -161,7 +161,7 @@
   optionalDependencies:
     electron-installer-debian "^3.0.0"
 
-"@electron-forge/maker-dmg@^6.0.0-beta.59":
+"@electron-forge/maker-dmg@6.0.0-beta.59":
   version "6.0.0-beta.59"
   resolved "https://artifactory.twitter.biz:443/api/npm/js-virtual/@electron-forge/maker-dmg/-/maker-dmg-6.0.0-beta.59.tgz#4870cd54494e7e5defbcd7914bae7e53cfa61426"
   integrity sha1-SHDNVElOfl3vvNeRS65+U8+mFCY=
@@ -172,7 +172,7 @@
   optionalDependencies:
     electron-installer-dmg "^3.0.0"
 
-"@electron-forge/maker-rpm@^6.0.0-beta.59":
+"@electron-forge/maker-rpm@6.0.0-beta.59":
   version "6.0.0-beta.59"
   resolved "https://artifactory.twitter.biz:443/api/npm/js-virtual/@electron-forge/maker-rpm/-/maker-rpm-6.0.0-beta.59.tgz#325d439ae15969e555258d3a76001c1474b73282"
   integrity sha1-Ml1DmuFZaeVVJY06dgAcFHS3MoI=
@@ -182,7 +182,7 @@
   optionalDependencies:
     electron-installer-redhat "^3.2.0"
 
-"@electron-forge/maker-squirrel@^6.0.0-beta.59":
+"@electron-forge/maker-squirrel@6.0.0-beta.59":
   version "6.0.0-beta.59"
   resolved "https://artifactory.twitter.biz:443/api/npm/js-virtual/@electron-forge/maker-squirrel/-/maker-squirrel-6.0.0-beta.59.tgz#24debb74786181004950e7ef63008aefa9b22290"
   integrity sha1-JN67dHhhgQBJUOfvYwCK76myIpA=
@@ -193,7 +193,7 @@
   optionalDependencies:
     electron-winstaller "^5.0.0"
 
-"@electron-forge/maker-zip@^6.0.0-beta.59":
+"@electron-forge/maker-zip@6.0.0-beta.59":
   version "6.0.0-beta.59"
   resolved "https://artifactory.twitter.biz:443/api/npm/js-virtual/@electron-forge/maker-zip/-/maker-zip-6.0.0-beta.59.tgz#d59c6a094ade2278d29edf423ed9242b03e17ba6"
   integrity sha1-1ZxqCUreInjSnt9CPtkkKwPhe6Y=
@@ -1535,10 +1535,10 @@ electron-winstaller@^5.0.0:
     lodash.template "^4.2.2"
     temp "^0.9.0"
 
-electron@12.0.8:
-  version "12.0.8"
-  resolved "https://artifactory.twitter.biz:443/api/npm/js-virtual/electron/-/electron-12.0.8.tgz#e52583b2b4f1eaa6fbb0e3666b9907f99f1f24c7"
-  integrity sha1-5SWDsrTx6qb7sONma5kH+Z8fJMc=
+electron@13.2.1:
+  version "13.2.1"
+  resolved "https://artifactory.twitter.biz:443/api/npm/js-virtual/electron/-/electron-13.2.1.tgz#0dc89ed0e3faf327b39571de533ca1ae18878ff1"
+  integrity sha1-Dcie0OP68yezlXHeUzyhrhiHj/E=
   dependencies:
     "@electron/get" "^1.0.1"
     "@types/node" "^14.6.2"
@@ -1907,10 +1907,10 @@ fs.realpath@^1.0.0:
   resolved "https://artifactory.twitter.biz:443/api/npm/js-virtual/fs.realpath/-/fs.realpath-1.0.0.tgz#1504ad2523158caa40db4a2787cb01411994ea4f"
   integrity sha1-FQStJSMVjKpA20onh8sBQRmU6k8=
 
-fsevents@~2.1.2:
-  version "2.1.3"
-  resolved "https://artifactory.twitter.biz:443/api/npm/js-virtual/fsevents/-/fsevents-2.1.3.tgz#fb738703ae8d2f9fe900c33836ddebee8b97f23e"
-  integrity sha1-+3OHA66NL5/pAMM4Nt3r7ouX8j4=
+fsevents@~2.3.2:
+  version "2.3.2"
+  resolved "https://artifactory.twitter.biz:443/api/npm/js-virtual/fsevents/-/fsevents-2.3.2.tgz#8a526f78b8fdf4623b709e0b975c52c24c02fd1a"
+  integrity sha1-ilJveLj99GI7cJ4Ll1xSwkwC/Ro=
 
 function-bind@^1.1.1:
   version "1.1.1"
@@ -3974,12 +3974,12 @@ rollup-plugin-copy@^3.3.0:
     globby "10.0.1"
     is-plain-object "^3.0.0"
 
-rollup@^2.36.1:
-  version "2.36.2"
-  resolved "https://artifactory.twitter.biz:443/api/npm/js-virtual/rollup/-/rollup-2.36.2.tgz#883fc793c70c8481ad604f1065cd79ab0a4e9c49"
-  integrity sha1-iD/Hk8cMhIGtYE8QZc15qwpOnEk=
+rollup@2.56.2:
+  version "2.56.2"
+  resolved "https://artifactory.twitter.biz:443/api/npm/js-virtual/rollup/-/rollup-2.56.2.tgz#a045ff3f6af53ee009b5f5016ca3da0329e5470f"
+  integrity sha1-oEX/P2r1PuAJtfUBbKPaAynlRw8=
   optionalDependencies:
-    fsevents "~2.1.2"
+    fsevents "~2.3.2"
 
 run-async@^2.4.0:
   version "2.4.1"

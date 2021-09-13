@@ -35,6 +35,7 @@ ReactDOM.render(<App />, document.querySelector('#app'))
 */
 
 
+let commandQueue: Command[] = []
 
 const display = new Display()
 const appDiv = document.getElementById('app')!!
@@ -76,5 +77,12 @@ ipcRenderer.on('command', (event: any, command: string) => {
       ipcRenderer.send('size')
       break;
   }*/
-  display.exec(c)
+  commandQueue.push(c)
 })
+
+const drawFrame = () => {
+  commandQueue.forEach(cmd => display.exec(cmd))
+  commandQueue = []
+  window.requestAnimationFrame(drawFrame)
+}
+drawFrame()

@@ -3,12 +3,40 @@
 <head>
     <meta charset="UTF-8">
     <title>Hello World!</title>
-    <meta http-equiv="Content-Security-Policy" content="script-src 'self' 'unsafe-inline' *;" />
+    <!--<meta http-equiv="Content-Security-Policy" content="script-src 'self' 'unsafe-inline' *;" />-->
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap" />
-    <style>html, body {margin: 0; padding: 0; height: 100%}</style>
+    <style>
+        html, body {
+            margin: 0; padding: 0; height: 100%
+        }
+        body {
+            background-size: 100px 100px;
+            background-image:
+                linear-gradient(
+                    to right, 
+                    rgb(204, 204, 204) 0px 1px, 
+                    transparent 1px 25px,
+                    rgb(230, 230, 230) 25px 26px,
+                    transparent 26px 50px,
+                    rgb(230, 230, 230) 50px 51px,
+                    transparent 51px 75px,
+                    rgb(230, 230, 230) 75px 76px,
+                    transparent 76px 100px),
+                linear-gradient(
+                    to bottom, 
+                    rgb(204, 204, 204) 0px 1px, 
+                    transparent 1px 25px,
+                    rgb(230, 230, 230) 25px 26px,
+                    transparent 26px 50px,
+                    rgb(230, 230, 230) 50px 51px,
+                    transparent 51px 75px,
+                    rgb(230, 230, 230) 75px 76px,
+                    transparent 76px 100px);
+        }
+    </style>
 
 </head>
-<body style="background: white;">
+<body>
     <!--
     <h1>Hello World!</h1>
     <p>

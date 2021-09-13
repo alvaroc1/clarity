@@ -9,7 +9,7 @@ const classes = jss.createStyleSheet({
     left: 0
   },
   layerCanvas: {
-    outline: '4px dotted #555555'
+    outline: '1px solid #555555'
   }
 }).attach().classes
 
@@ -20,16 +20,28 @@ export class Layer {
   #container: HTMLDivElement
   #pathClosed: boolean = true
   #children: Layer[] = []
+  #transformStack: number = 0
 
   get container () {
     return this.#container
   }
 
-  private constructor (label: string) {
+  get context () {
+    return this.#ctx;
+  }
+
+  get canvas () {
+    return this.#canvas;
+  }
+
+  private constructor (label: string, width: number, height: number) {
+    console.log("Layer: constructor")
     this.#label = label
     const canvas = document.createElement('canvas')
-    canvas.width = 200
-    canvas.height = 200
+    canvas.width = width * window.devicePixelRatio
+    canvas.height = height * window.devicePixelRatio
+    canvas.style.width = `${width}px`
+    canvas.style.height = `${height}px`
     canvas.className = classes.layerCanvas
 
     const container = document.createElement('div')
@@ -38,15 +50,15 @@ export class Layer {
     container.appendChild(canvas)
 
     const ctx = canvas.getContext('2d')!!
-    ctx.transform(3, 0, 0, 3, 0, 0)
-    console.log('SCALING')
-    //ctx.scale(window.devicePixelRatio, window.devicePixelRatio)
-    ctx.strokeStyle = '#000000'
-    ctx.lineWidth = 5
+
+    // scale to match pixel ratio
+    ctx.scale(window.devicePixelRatio, window.devicePixelRatio)
 
     this.#canvas = canvas
     this.#ctx = ctx
     this.#container = container
+
+    //Layer.drawGrid(ctx, width, height)
   }
 
   setChannelMask = (mask: ChannelMask): void => {
@@ -63,7 +75,6 @@ export class Layer {
 
   #startPathIfNecessary = () => {
     if (this.#pathClosed) {
-      console.log("BEGIN PATH")
       this.#ctx.beginPath()
       this.#pathClosed = false
     }
@@ -96,21 +107,32 @@ export class Layer {
   }
 
   cfill = (r: number, g: number, b: number, a: number): void => {
+    console.log("Layer: CFILL")
+    console.log(this.#ctx.getTransform())
     this.#ctx.fillStyle = "rgba(" + r + "," + g + "," + b + "," + a/255.0 + ")"
     this.#ctx.fill()
     this.#pathClosed = true
   }
 
   resize = (width: number, height: number): void => {
-    const canvasWidth  = Math.ceil(width  / CANVAS_SIZE_FACTOR) * CANVAS_SIZE_FACTOR
-    const canvasHeight = Math.ceil(height / CANVAS_SIZE_FACTOR) * CANVAS_SIZE_FACTOR
+    const canvasWidth  = Math.ceil(width)
+    const canvasHeight = Math.ceil(height)
 
-    console.log(width)
-    console.log(canvasWidth)
+    const newCanvasWidth = canvasWidth * window.devicePixelRatio
+    const newCanvasHeight = canvasHeight * window.devicePixelRatio
 
-    if (this.#canvas.width !== canvasWidth || this.#canvas.height !== canvasHeight) {
-      this.#canvas.width = canvasWidth
-      this.#canvas.height = canvasHeight
+    if (this.#canvas.width !== newCanvasWidth || this.#canvas.height !== newCanvasHeight) {
+      // save transform
+      const transformMatrix = this.#ctx.getTransform()
+      
+      // resize
+      this.#canvas.width = newCanvasWidth
+      this.#canvas.height = newCanvasHeight
+      this.#canvas.style.width = `${canvasWidth}px`
+      this.#canvas.style.height = `${canvasHeight}px`
+
+      // restore transform
+      this.#ctx.setTransform(transformMatrix)
     }
   }
 
@@ -123,13 +145,53 @@ export class Layer {
     this.#ctx.closePath()
   }
 
+  identity = (): void => {
+    this.#ctx.resetTransform()
+  }
+
+  transform = (a:number, b:number, c:number, d:number, e:number, f:number): void => {
+    this.#ctx.transform(a, b, c, d, e, f)
+  }
+
+  curve = (cp1x:number, cp1y:number, cp2x:number, cp2y:number, x:number, y:number) => {
+    this.#ctx.bezierCurveTo(cp1x, cp1y, cp2x, cp2y, x, y)
+  }
+
+  //TODO: keep track of the stack size
+  push = (): void => {
+    this.#ctx.save()
+    this.#transformStack++
+  }
+
+  pop = (): void => {
+    // this check prevents popping the device pixel ratio transformation
+    if (this.#transformStack > 0) {
+      this.#ctx.restore()
+      this.#transformStack--
+    }
+  }
+
   mount = (element: Element): void => {
     element.appendChild(this.#container)
   }
 
-  static create = (label: string): Layer => new Layer(label)
-}
+  static create = (label: string, width: number, height: number): Layer => new Layer(label, width, height)
 
-/* What is this? maybe from when trying to draw the othello board */
-//const CANVAS_SIZE_FACTOR = 64
-const CANVAS_SIZE_FACTOR = 1
+  static drawGrid = (ctx: CanvasRenderingContext2D, width: number, height: number) => {
+    const oldLineDash = ctx.getLineDash()
+    ctx.beginPath()
+    ctx.setLineDash([1])
+    for (let x = 0; x <= width; x += 25) {
+      ctx.moveTo(x, 0)
+      ctx.lineTo(x, height)
+    }
+    for (let y = 0; y <= height; y += 25) {
+      ctx.moveTo(0, y)
+      ctx.lineTo(width, y)
+    }
+    ctx.strokeStyle = '#000000'
+    ctx.lineWidth = 1
+    ctx.stroke()
+    ctx.setLineDash(oldLineDash)
+  }
+}

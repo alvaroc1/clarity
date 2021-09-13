@@ -8,7 +8,7 @@ export class AsyncQueue <T> {
   }
 
   offer (value: T): void {
-    console.log(`AsyncQueue.ts: offer(${value})`)
+    //console.log(`AsyncQueue.ts: offer(${value})`)
     this.#buffer.push(value)
     this.#notify()
   }
