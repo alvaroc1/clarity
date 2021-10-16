@@ -1,5 +1,6 @@
-import { AsyncQueue } from './util/AsyncQueue'
+import { AsyncQueue2 } from './util/AsyncQueue'
 import { app, BrowserWindow, ipcMain } from 'electron'
+import { Command } from '../protocol/Command'
 
 /** Represents a single connection and a single window being controlled by a server */
 export class Session {
@@ -7,7 +8,7 @@ export class Session {
 }
 
 export namespace Session {
-  export const create = (commandQueue: AsyncQueue<string>): Session => {
+  export const create = (commandQueue: AsyncQueue2<Command>): Session => {
     const win = new BrowserWindow({
       title: "Clarity",
       webPreferences: {
@@ -21,8 +22,8 @@ export namespace Session {
     })
     win.loadFile("build/index.html").then(_ => {
       const poller = async () => {
-        const cmd = await commandQueue.poll()
-        win.webContents.send('command', cmd)
+        const cmds = await commandQueue.poll()
+        win.webContents.send('commands', cmds)
         poller()
       }
       poller()

@@ -6,8 +6,8 @@ import IconButton from '@material-ui/core/IconButton'
 import MenuIcon from '@material-ui/core/MenuItem'
 import Typography from '@material-ui/core/Typography'
 import { Display } from './display/Display'
-import { Command } from './display/Command'
-import { ChannelMask } from './display/ChannelMask'
+import { Command } from '../protocol/Command'
+import { ChannelMask } from '../protocol/ChannelMask'
 //import { ipcRenderer } from 'electron'
 const { ipcRenderer } = require('electron')
 
@@ -49,6 +49,7 @@ appDiv.addEventListener('click', ev => {
   const event = {
     x, y
   }
+  console.log('click')
   ipcRenderer.send('event', event)
 })
 
@@ -69,19 +70,18 @@ commands.forEach(command => {
   //display.exec(command)
 })
 
-ipcRenderer.on('command', (event: any, command: string) => {
-  const c = Command.parse(command)
-  /*
-  switch (c[0]) {
-    case 'size': 
-      ipcRenderer.send('size')
-      break;
-  }*/
-  commandQueue.push(c)
+ipcRenderer.on('commands', (event: any, commands: Command[]) => {
+  commands.forEach(command => commandQueue.push(command))
 })
 
 const drawFrame = () => {
-  commandQueue.forEach(cmd => display.exec(cmd))
+  commandQueue.forEach(cmd => {
+    if (cmd[0] == 'sync') {
+      display.flush()
+    } else {
+      display.exec(cmd)
+    }
+  })
   commandQueue = []
   window.requestAnimationFrame(drawFrame)
 }

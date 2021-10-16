@@ -1,6 +1,7 @@
 import { Layer } from './Layer'
-import { Command, LayerCommand, LayerPathCompleteCommand } from './Command'
+import { Command, LayerCommand, LayerPathCompleteCommand } from '../../protocol/Command'
 import jss from 'jss'
+import { ChannelMask } from '../../protocol/ChannelMask'
 const { ipcRenderer } = require('electron')
 
 const classes = jss.createStyleSheet({
@@ -15,6 +16,8 @@ export class Display {
   #element: HTMLDivElement 
 
   #layers: {[idx: number]: Layer}
+
+  #tasks: Array<() => void> = []
 
   constructor() {
     console.log("Display: CONSTRUCTOR")
@@ -32,7 +35,6 @@ export class Display {
 
 
   #getLayer = (idx: number): Layer => {
-    console.log(`getLayer ${idx}`)
     return idx in this.#layers ? this.#layers[idx] : this.#createLayer(idx)
   }
 
@@ -54,66 +56,83 @@ export class Display {
     this.#defaultLayer.mount(this.#element)
   }
 
+  flush = () => {
+    console.log("FLUSHING")
+    window.requestAnimationFrame(() => {
+      this.#tasks.forEach(t => t())
+      this.#tasks = []
+    })
+  }
+
   exec = (c: Command): void => {
-    switch (c[0]) {
-      case 'size':
-        const layer = c[1]
-        console.log(c.toString())
-        if (layer == 0) {
-          const width = c[2]
-          const height = c[3]
-          ipcRenderer.send('resize', width, height)
-        }
-        this.#execLayerCommand(c); 
-        break;
-      
-      case 'copy':
-        const srcLayer = this.#getLayer(c[1])
-        const [sx, sy, sw, sh, cm] = [c[2], c[3], c[4], c[5], c[6]]
-        const dstLayer = this.#getLayer(c[7])
-        const [dx, dy] = [c[8], c[9]]
+    this.#tasks.push(() => {
+      switch (c[0]) {
+        case 'size':
+          const layer = c[1]
+          if (layer == 0) {
+            const width = c[2]
+            const height = c[3]
+            ipcRenderer.send('resize', width, height)
+          }
+          this.#execLayerCommand(c); 
+          break;
+        
+        case 'copy':
+          const srcLayer = this.#getLayer(c[1])
+          const [sx, sy, sw, sh, cm] = [c[2], c[3], c[4], c[5], c[6]]
+          const dstLayer = this.#getLayer(c[7])
+          const [dx, dy] = [c[8], c[9]]
 
-        const savedCompositeOperation = dstLayer.context.globalCompositeOperation
-        switch (cm) {
-          case 12: dstLayer.context.globalCompositeOperation = 'copy'; break;
-          default: dstLayer.context.globalCompositeOperation = 'source-over'; break;
-        }
+          const savedCompositeOperation = dstLayer.context.globalCompositeOperation
+          switch (cm) {
+            case ChannelMask.SRC: 
+              // if this is a copy operation, 
+              // it's actually better if we clear a rect and use source-over
+              dstLayer.context.clearRect(dx, dy, sw, sh)
+              dstLayer.context.globalCompositeOperation = 'source-over';
+              break;
+            default: dstLayer.context.globalCompositeOperation = ChannelMask.toHtmlCanvasCompositeOperation(cm); break;
+          }
 
-        dstLayer.context.drawImage(
-          srcLayer.canvas, 
-          sx * window.devicePixelRatio, 
-          sy * window.devicePixelRatio, 
-          sw * window.devicePixelRatio, 
-          sh * window.devicePixelRatio, 
-          dx, dy,
-          sw, sh
-        )
+          dstLayer.context.drawImage(
+            srcLayer.canvas, 
+            sx * window.devicePixelRatio, 
+            sy * window.devicePixelRatio, 
+            sw * window.devicePixelRatio, 
+            sh * window.devicePixelRatio, 
+            dx, dy,
+            sw, sh
+          )
 
-        dstLayer.context.globalCompositeOperation = savedCompositeOperation
-        break;
+          dstLayer.context.globalCompositeOperation = savedCompositeOperation
+          break;
 
-      case 'rect': 
-      case 'arc':
-      case 'start':
-      case 'line':
-      case 'move':
-      case 'close':
-      case 'transform':
-      case 'identity':
-      case 'push':
-      case 'pop':
-      case 'curve':
-        this.#execLayerCommand(c); 
-        break;
+        case 'rect': 
+        case 'arc':
+        case 'start':
+        case 'line':
+        case 'move':
+        case 'close':
+        case 'transform':
+        case 'identity':
+        case 'push':
+        case 'pop':
+        case 'curve':
+          this.#execLayerCommand(c); 
+          break;
 
-      case 'cfill':
-      case 'cstroke': 
-        this.#execLayerPathCompleteCommand(c); 
-        break;
+        case 'cfill':
+        case 'cstroke': 
+          this.#execLayerPathCompleteCommand(c); 
+          break;
 
-      default: 
-        assertUnreachable(c)
-    }
+        case 'sync':
+          throw 'There should not be control commands here'
+
+        default: 
+          assertUnreachable(c)
+      }
+    })
   }
 
   #execLayerCommand = (c: LayerCommand): void => {

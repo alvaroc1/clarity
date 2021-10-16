@@ -1,5 +1,7 @@
 import { ChannelMask } from "./ChannelMask"
 
+const stripParamSize = (param: string) => param.replace(/^[0-9]+\./, '')
+
 export namespace Cap {
   export const Butt = 0
   export const Round = 1
@@ -67,7 +69,7 @@ export namespace Command {
   export const cfill = (layer: number, mask: ChannelMask, r: number, g: number, b: number, a: number): Cfill => ['cfill', mask, layer, r, g, b, a] 
 
   export const parse = (cmdStr: string): Command => {
-    const [cmd, ...rest] = cmdStr.trim().split(',')
+    const [cmd, ...rest] = cmdStr.trim().split(',').map(stripParamSize)
     return [cmd, ...rest.map(v => parseFloat(v))] as any as Command
   }
 }
@@ -77,4 +79,4 @@ export type CanvasCommand = Command.Copy
 export type LayerCommand = Command.Arc | Command.Rect | Command.Start | Command.Line | Command.Size | Command.Move | Command.Close | Command.Identity |
   Command.Transform | Command.Push | Command.Pop | Command.Curve
 export type LayerPathCompleteCommand = Command.Cstroke | Command.Cfill
-export type Command = CanvasCommand | LayerCommand | LayerPathCompleteCommand
+export type Command = CanvasCommand | LayerCommand | LayerPathCompleteCommand | ['sync', number]

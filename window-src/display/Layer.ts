@@ -1,5 +1,5 @@
-import {Cap, Join} from './Command'
-import {ChannelMask} from './ChannelMask'
+import {Cap, Join} from '../../protocol/Command'
+import {ChannelMask} from '../../protocol/ChannelMask'
 import jss from 'jss'
 
 const classes = jss.createStyleSheet({
@@ -122,6 +122,16 @@ export class Layer {
     const newCanvasHeight = canvasHeight * window.devicePixelRatio
 
     if (this.#canvas.width !== newCanvasWidth || this.#canvas.height !== newCanvasHeight) {
+      // save contents
+      const tmp = document.createElement('canvas') as HTMLCanvasElement
+
+      document.body.appendChild(tmp)
+      console.log(tmp)
+      tmp.width = this.#canvas.width
+      tmp.height = this.#canvas.height
+      const tmpCtx = tmp.getContext('2d')!!
+      tmpCtx.drawImage(this.#canvas, 0, 0, this.#canvas.width, this.#canvas.height, 0, 0, this.#canvas.width, this.#canvas.height)
+
       // save transform
       const transformMatrix = this.#ctx.getTransform()
       
@@ -130,6 +140,9 @@ export class Layer {
       this.#canvas.height = newCanvasHeight
       this.#canvas.style.width = `${canvasWidth}px`
       this.#canvas.style.height = `${canvasHeight}px`
+
+      // restore contents
+      this.#ctx.drawImage(tmp, 0, 0, tmp.width, tmp.height, 0, 0, tmp.width, tmp.height)
 
       // restore transform
       this.#ctx.setTransform(transformMatrix)
