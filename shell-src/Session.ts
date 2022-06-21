@@ -1,49 +1,48 @@
-import { AsyncQueue2 } from './util/AsyncQueue'
-import { app, BrowserWindow, ipcMain } from 'electron'
+import { BrowserWindow, ipcMain } from 'electron'
 import { Command } from '../protocol/Command'
 
-/** Represents a single connection and a single window being controlled by a server */
+/** Represents a single connection and a single window being controlled by a server 
+ * for now, a session is just something that can receive commands
+ */
 export class Session {
 
+  // keep track of any commands before we loaded the window
+  #commandsBeforeLoaded: Command[] = []
+  #commandsBeforeLoadedFlushed = false
+  #indexLoaded = false
+  #win = new BrowserWindow({
+    title: "Clarity",
+    webPreferences: {
+      nodeIntegration: true,
+      contextIsolation: false,
+    },
+    // keeping simple for now
+    // clarity is just a drawing canvas for now,
+    // not a full blown ui platform
+    //resizable: false
+    resizable: true,
+  })
+
+  constructor() {
+    this.#win.loadFile("build/index.html").then(_ => {
+      this.#indexLoaded = true
+    })
+  }
+
+  send(commands: Command[]) {
+    if (!this.#indexLoaded) {
+      commands.forEach(command => this.#commandsBeforeLoaded.push(command))
+    } else {
+      if (!this.#commandsBeforeLoadedFlushed) {
+        this.#win.webContents.send('commands', this.#commandsBeforeLoaded)
+        this.#commandsBeforeLoaded = []
+        this.#commandsBeforeLoadedFlushed = true
+      }
+      this.#win.webContents.send('commands', commands)
+    }
+  }
 }
 
 export namespace Session {
-  export const create = (commandQueue: AsyncQueue2<Command>): Session => {
-    const win = new BrowserWindow({
-      title: "Clarity",
-      webPreferences: {
-        nodeIntegration: true,
-        contextIsolation: false
-      },
-      // keeping simple for now
-      // clarity is just a drawing canvas for now,
-      // not a full blown ui platform
-      resizable: false
-    })
-    win.loadFile("build/index.html").then(_ => {
-      const poller = async () => {
-        const cmds = await commandQueue.poll()
-        win.webContents.send('commands', cmds)
-        poller()
-      }
-      poller()
-      //setTimeout(x => poller(), 5000);
-    })
-
-    /** 
-     * Handles resize coming from the server
-     */
-    ipcMain.on('resize', (event: any, width: number, height: number) => {
-      win.setContentSize(width, height, false)
-    })
-
-    /*
-    ipcMain.on('event', (event: any, data: any) => {
-      console.log('EVENT on main')
-      onEvent(data as {x: number, y: number})
-    })
-    */
-
-    return new Session()
-  }
+  export const create = (): Session => new Session()
 }

@@ -13,9 +13,9 @@ const classes = jss.createStyleSheet({
 export class Display {
   #defaultLayer: Layer
 
-  #element: HTMLDivElement 
+  #element: HTMLDivElement
 
-  #layers: {[idx: number]: Layer}
+  #layers: { [idx: number]: Layer }
 
   #tasks: Array<() => void> = []
 
@@ -57,7 +57,6 @@ export class Display {
   }
 
   flush = () => {
-    console.log("FLUSHING")
     window.requestAnimationFrame(() => {
       this.#tasks.forEach(t => t())
       this.#tasks = []
@@ -74,9 +73,9 @@ export class Display {
             const height = c[3]
             ipcRenderer.send('resize', width, height)
           }
-          this.#execLayerCommand(c); 
+          this.#execLayerCommand(c);
           break;
-        
+
         case 'copy':
           const srcLayer = this.#getLayer(c[1])
           const [sx, sy, sw, sh, cm] = [c[2], c[3], c[4], c[5], c[6]]
@@ -85,21 +84,21 @@ export class Display {
 
           const savedCompositeOperation = dstLayer.context.globalCompositeOperation
           switch (cm) {
-            case ChannelMask.SRC: 
+            case ChannelMask.SRC:
               // if this is a copy operation, 
               // it's actually better if we clear a rect and use source-over
               dstLayer.context.clearRect(dx, dy, sw, sh)
               dstLayer.context.globalCompositeOperation = 'source-over';
               break;
-            default: dstLayer.context.globalCompositeOperation = ChannelMask.toHtmlCanvasCompositeOperation(cm); break;
+            default: dstLayer.context.globalCompositeOperation = (ChannelMask.toHtmlCanvasCompositeOperation(cm) as GlobalCompositeOperation); break;
           }
 
           dstLayer.context.drawImage(
-            srcLayer.canvas, 
-            sx * window.devicePixelRatio, 
-            sy * window.devicePixelRatio, 
-            sw * window.devicePixelRatio, 
-            sh * window.devicePixelRatio, 
+            srcLayer.canvas,
+            sx * window.devicePixelRatio,
+            sy * window.devicePixelRatio,
+            sw * window.devicePixelRatio,
+            sh * window.devicePixelRatio,
             dx, dy,
             sw, sh
           )
@@ -107,7 +106,7 @@ export class Display {
           dstLayer.context.globalCompositeOperation = savedCompositeOperation
           break;
 
-        case 'rect': 
+        case 'rect':
         case 'arc':
         case 'start':
         case 'line':
@@ -118,18 +117,18 @@ export class Display {
         case 'push':
         case 'pop':
         case 'curve':
-          this.#execLayerCommand(c); 
+          this.#execLayerCommand(c);
           break;
 
         case 'cfill':
-        case 'cstroke': 
-          this.#execLayerPathCompleteCommand(c); 
+        case 'cstroke':
+          this.#execLayerPathCompleteCommand(c);
           break;
 
         case 'sync':
           throw 'There should not be control commands here'
 
-        default: 
+        default:
           assertUnreachable(c)
       }
     })
@@ -139,11 +138,11 @@ export class Display {
     const layer = this.#getLayer(c[1])
     //console.log(`Display.ts: #execLayerCommand(${c})`)
     switch (c[0]) {
-      case 'rect':  layer.rect(c[2], c[3], c[4], c[5]); break;
-      case 'arc':   layer.arc(c[2], c[3], c[4], c[5], c[6], c[7] > 0); break;
-      case 'size':  layer.resize(c[2], c[3]); break;
+      case 'rect': layer.rect(c[2], c[3], c[4], c[5]); break;
+      case 'arc': layer.arc(c[2], c[3], c[4], c[5], c[6], c[7] > 0); break;
+      case 'size': layer.resize(c[2], c[3]); break;
       case 'start': layer.start(c[2], c[3]); break;
-      case 'line':  layer.line(c[2], c[3]); break;
+      case 'line': layer.line(c[2], c[3]); break;
       case 'curve': layer.curve(c[2], c[3], c[4], c[5], c[6], c[7]); break;
       case 'move': layer.move(c[2], c[3]); break;
       case 'close': layer.close(); break;
@@ -151,11 +150,11 @@ export class Display {
       case 'transform': layer.transform(c[2], c[3], c[4], c[5], c[6], c[7]); break;
       case 'push': layer.push(); break;
       case 'pop': layer.pop(); break;
-      default: 
+      default:
         assertUnreachable(c)
     }
   }
-  
+
   #execLayerPathCompleteCommand = (c: LayerPathCompleteCommand): void => {
     const layer = this.#getLayer(c[2])
     layer.setChannelMask(c[1])

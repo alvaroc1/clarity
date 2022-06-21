@@ -1,27 +1,19 @@
-import { app, BrowserWindow, ipcMain } from 'electron'
+import { app, ipcMain } from 'electron'
 import * as net from 'net'
-import { AsyncQueue2 } from './util/AsyncQueue'
 import { Session } from './Session'
 import { Command } from '../protocol/Command'
 
 let session: Session | null = null
 
-let commandsQueue2: Command[] = []
-
 app.on('ready', async event => {
-  const commandQueue = new AsyncQueue2<Command>()
-
   const server = net.createServer(socket => {
     console.log("CONNECTED")
 
     let socketClosed = false
 
-    if (session == null) {
-      session = Session.create(commandQueue)
-    }
+    const session = Session.create()
 
     socket.on('data', data => {
-      //console.log(`DATA: ${data.length}`)
       // process command
       const commands = data.toString()
         .split(";")
@@ -30,14 +22,7 @@ app.on('ready', async event => {
         .filter((cmd: string) => cmd !== "")
         .map(cmd => Command.parse(cmd))
 
-      commands.forEach(command => {
-        //if (command[0] == "sync") {
-        //  commandQueue.offerBatch(commandsQueue2)
-        //  commandsQueue2 = []
-        //} else {
-          commandQueue.offerBatch([command])
-        //}
-      })
+      session.send(commands)
 
       try {
         //if (!socketClosed) socket.write("mouse,0,0,0")
@@ -54,8 +39,9 @@ app.on('ready', async event => {
       console.log(`got error on socket, prob unexpected disconnect (?): ${error.message}`)
     })
 
-    ipcMain.on('event', ev => {
-      console.log(ev)
+    ipcMain.on('event', (_, data) => {
+      console.log(data)
+      socket.write("mouse,2,3,2")
     })
   })
   server.listen(9002)
@@ -68,13 +54,3 @@ app.on('ready', async event => {
     console.log('client error')
   })
 
-  /*
-  await win.webContents.session.loadExtension(
-    path.join(os.homedir(), '/Library/Application Support/Google/Chrome/Profile 1/Extensions/fmkadmapgofadopljbjfkapdkoienihi/4.10.1_0')
-  )
-  */
-
-  //await win.loadFile("build/index.html")
-  //win.webContents.openDevTools()
-  
-})
