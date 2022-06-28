@@ -6,21 +6,17 @@ import { Command } from '../protocol/Command'
 let session: Session | null = null
 
 app.on('ready', async event => {
-  const server = net.createServer(socket => {
+  const server = net.createServer({ pauseOnConnect: true }, socket => {
     console.log("CONNECTED")
 
     let socketClosed = false
 
     const session = Session.create()
 
+    socket.resume()
+
     socket.on('data', data => {
-      // process command
-      const commands = data.toString()
-        .split(";")
-        // drop the size of each command at the beginning
-        .map((s: string) => s.trim())
-        .filter((cmd: string) => cmd !== "")
-        .map(cmd => Command.parse(cmd))
+      let commands: Command[] = Command.parseFromBuffer(data)
 
       session.send(commands)
 
@@ -32,16 +28,31 @@ app.on('ready', async event => {
     })
 
     socket.on('close', _ => {
+      console.log("SOCKET CLOSED")
       socketClosed = true
     })
+
+    socket.on('end', (_: any) => {
+      console.log("SOCKET END")
+    });
+
+    socket.on('drain', (_: any) => {
+      console.log("SOCKET DRAIN")
+    });
 
     socket.on('error', error => {
       console.log(`got error on socket, prob unexpected disconnect (?): ${error.message}`)
     })
 
+    socket.on('disconnect', _ => {
+      console.log("DISCONNECT")
+    })
+
     ipcMain.on('event', (_, data) => {
       console.log(data)
-      socket.write("mouse,2,3,2")
+      const encoded = encodeCommand(data)
+      console.log(encoded)
+      socket.write(encoded + ";")
     })
   })
   server.listen(9002)
@@ -54,3 +65,11 @@ app.on('ready', async event => {
     console.log('client error')
   })
 
+});
+
+const encodeCommand = (command: string[]): string => {
+  return command.map(segment => {
+    const seg = segment.toString()
+    return seg.length + "." + seg
+  }).join(",")
+};

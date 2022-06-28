@@ -1,5 +1,5 @@
 import { Layer } from './Layer'
-import { Command, LayerCommand, LayerPathCompleteCommand } from '../../protocol/Command'
+import { Command, LayerCommand, LayerPathCompleteCommand, MouseButton } from '../../protocol/Command'
 import jss from 'jss'
 import { ChannelMask } from '../../protocol/ChannelMask'
 const { ipcRenderer } = require('electron')
@@ -10,6 +10,12 @@ const classes = jss.createStyleSheet({
   }
 }).attach().classes
 
+export interface MouseEv {
+  x: number,
+  y: number,
+  buttons: Set<MouseButton>
+}
+
 export class Display {
   #defaultLayer: Layer
 
@@ -19,7 +25,11 @@ export class Display {
 
   #tasks: Array<() => void> = []
 
-  constructor() {
+  #mouseButtonsPressed: Set<MouseButton> = new Set()
+
+  #onMouse: (ev: MouseEv) => void
+
+  constructor(onMouse: (ev: MouseEv) => void) {
     console.log("Display: CONSTRUCTOR")
 
     const defaultLayer = Layer.create('layer-default', 200, 200)
@@ -28,9 +38,56 @@ export class Display {
 
     this.#element = element
     this.#defaultLayer = defaultLayer
+    this.#onMouse = onMouse
     this.#layers = {
       0: defaultLayer
     }
+
+    // setup mouse events
+    /*
+    element.addEventListener('mousemove', ev => {
+      this.#onMouse({
+        x: ev.clientX,
+        y: ev.clientY,
+        buttons: this.#mouseButtonsPressed,
+      })
+    });
+
+    */
+    element.addEventListener('mousedown', ev => {
+      this.#mouseButtonsPressed = this.#numberToButtonSet(ev.buttons)
+      console.log("DOWN")
+      console.log(ev.button)
+      console.log(ev.buttons)
+      console.log(this.#mouseButtonsPressed)
+      this.#onMouse({
+        x: ev.clientX,
+        y: ev.clientY,
+        buttons: this.#mouseButtonsPressed,
+      })
+    });
+    element.addEventListener('mouseup', ev => {
+      this.#mouseButtonsPressed = this.#numberToButtonSet(ev.buttons)
+      console.log("UP")
+      console.log(ev.button)
+      console.log(this.#mouseButtonsPressed)
+      this.#onMouse({
+        x: ev.clientX,
+        y: ev.clientY,
+        buttons: this.#mouseButtonsPressed,
+      })
+    });
+  }
+
+  #numberToButtonSet = (n: number): Set<MouseButton> => {
+    const s = new Set<MouseButton>()
+    const allButtons = [MouseButton.Left, MouseButton.Middle, MouseButton.Right, MouseButton.ScrollUp, MouseButton.ScrollDown]
+    allButtons.forEach((but: MouseButton) => {
+      if ((n & (1 << but)) !== 0) {
+        s.add(Math.pow(2, but))
+      }
+    })
+    return s
   }
 
 
@@ -136,7 +193,6 @@ export class Display {
 
   #execLayerCommand = (c: LayerCommand): void => {
     const layer = this.#getLayer(c[1])
-    //console.log(`Display.ts: #execLayerCommand(${c})`)
     switch (c[0]) {
       case 'rect': layer.rect(c[2], c[3], c[4], c[5]); break;
       case 'arc': layer.arc(c[2], c[3], c[4], c[5], c[6], c[7] > 0); break;

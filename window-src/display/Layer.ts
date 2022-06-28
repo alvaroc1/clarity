@@ -1,5 +1,5 @@
-import {Cap, Join} from '../../protocol/Command'
-import {ChannelMask} from '../../protocol/ChannelMask'
+import { Cap, Join } from '../../protocol/Command'
+import { ChannelMask } from '../../protocol/ChannelMask'
 import jss from 'jss'
 
 const classes = jss.createStyleSheet({
@@ -22,19 +22,19 @@ export class Layer {
   #children: Layer[] = []
   #transformStack: number = 0
 
-  get container () {
+  get container() {
     return this.#container
   }
 
-  get context () {
+  get context() {
     return this.#ctx;
   }
 
-  get canvas () {
+  get canvas() {
     return this.#canvas;
   }
 
-  private constructor (label: string, width: number, height: number) {
+  private constructor(label: string, width: number, height: number) {
     console.log("Layer: constructor")
     this.#label = label
     const canvas = document.createElement('canvas')
@@ -101,21 +101,19 @@ export class Layer {
 
   cstroke = (cap: Cap, join: Join, thickness: number, r: number, g: number, b: number, a: number): void => {
     this.#ctx.lineWidth = thickness
-    this.#ctx.strokeStyle = "rgba(" + r + "," + g + "," + b + "," + a/255.0 + ")"
+    this.#ctx.strokeStyle = "rgba(" + r + "," + g + "," + b + "," + a / 255.0 + ")"
     this.#ctx.stroke()
     this.#pathClosed = true
   }
 
   cfill = (r: number, g: number, b: number, a: number): void => {
-    console.log("Layer: CFILL")
-    console.log(this.#ctx.getTransform())
-    this.#ctx.fillStyle = "rgba(" + r + "," + g + "," + b + "," + a/255.0 + ")"
+    this.#ctx.fillStyle = "rgba(" + r + "," + g + "," + b + "," + a / 255.0 + ")"
     this.#ctx.fill()
     this.#pathClosed = true
   }
 
   resize = (width: number, height: number): void => {
-    const canvasWidth  = Math.ceil(width)
+    const canvasWidth = Math.ceil(width)
     const canvasHeight = Math.ceil(height)
 
     const newCanvasWidth = canvasWidth * window.devicePixelRatio
@@ -134,7 +132,7 @@ export class Layer {
 
       // save transform
       const transformMatrix = this.#ctx.getTransform()
-      
+
       // resize
       this.#canvas.width = newCanvasWidth
       this.#canvas.height = newCanvasHeight
@@ -162,11 +160,11 @@ export class Layer {
     this.#ctx.resetTransform()
   }
 
-  transform = (a:number, b:number, c:number, d:number, e:number, f:number): void => {
+  transform = (a: number, b: number, c: number, d: number, e: number, f: number): void => {
     this.#ctx.transform(a, b, c, d, e, f)
   }
 
-  curve = (cp1x:number, cp1y:number, cp2x:number, cp2y:number, x:number, y:number) => {
+  curve = (cp1x: number, cp1y: number, cp2x: number, cp2y: number, x: number, y: number) => {
     this.#ctx.bezierCurveTo(cp1x, cp1y, cp2x, cp2y, x, y)
   }
 

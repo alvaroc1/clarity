@@ -8,8 +8,10 @@ export class Session {
 
   // keep track of any commands before we loaded the window
   #commandsBeforeLoaded: Command[] = []
-  #commandsBeforeLoadedFlushed = false
   #indexLoaded = false
+
+  #debug = true
+
   #win = new BrowserWindow({
     title: "Clarity",
     webPreferences: {
@@ -20,12 +22,19 @@ export class Session {
     // clarity is just a drawing canvas for now,
     // not a full blown ui platform
     //resizable: false
-    resizable: true,
+    resizable: this.#debug,
+    //frame: !this.#debug,
+    roundedCorners: false,
   })
 
   constructor() {
+    ipcMain.on('resize', (event: any, width: number, height: number) => {
+      this.#win.setContentSize(width, height, false)
+    })
     this.#win.loadFile("build/index.html").then(_ => {
       this.#indexLoaded = true
+      this.#win.webContents.send('commands', this.#commandsBeforeLoaded)
+      this.#commandsBeforeLoaded = []
     })
   }
 
@@ -33,11 +42,6 @@ export class Session {
     if (!this.#indexLoaded) {
       commands.forEach(command => this.#commandsBeforeLoaded.push(command))
     } else {
-      if (!this.#commandsBeforeLoadedFlushed) {
-        this.#win.webContents.send('commands', this.#commandsBeforeLoaded)
-        this.#commandsBeforeLoaded = []
-        this.#commandsBeforeLoadedFlushed = true
-      }
       this.#win.webContents.send('commands', commands)
     }
   }

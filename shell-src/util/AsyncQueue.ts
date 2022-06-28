@@ -38,7 +38,7 @@ export class AsyncQueue<T> {
     const poller = async () => {
       const values = await this.poll()
       fn(values)
-      return poller()
+      poller()
     }
     poller()
   }

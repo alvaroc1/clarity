@@ -1,4 +1,13 @@
+import { assert } from "console"
 import { ChannelMask } from "./ChannelMask"
+
+export enum MouseButton {
+  Left,
+  Middle,
+  Right,
+  ScrollUp,
+  ScrollDown,
+}
 
 /** Each parameter includes it's size for efficient parsing, but we don't need that yet */
 const stripParamSize = (param: string) => param.replace(/^[0-9]+\./, '')
@@ -74,6 +83,74 @@ export namespace Command {
     const [cmd, ...rest] = cmdStr.trim().split(',').map(stripParamSize)
     return [cmd, ...rest.map(v => parseFloat(v))] as any as Command
   }
+
+  const dot = '.'.charCodeAt(0)
+  const comma = ','.charCodeAt(0)
+  const semi = ';'.charCodeAt(0)
+
+  export const parseFromBuffer = (data: Buffer): Command[] => {
+    let offset = 0
+    let next = data.readUInt8(offset++);
+
+    const parseSize = (): number => {
+      let commandSizeChars: number[] = []
+      while (next != dot) {
+        commandSizeChars.push(next)
+        next = data.readUInt8(offset++)
+      }
+      return parseInt(String.fromCharCode(...commandSizeChars), 10)
+    }
+
+    const parseSizedString = (): string => {
+      const size = parseSize()
+      const s = data.toString(undefined, offset, offset + size)
+      offset += size
+      next = data.readUInt8(offset++)
+      return s
+    }
+
+    const parseCommand = (): Command => {
+      const command = parseSizedString()
+
+      let params: number[] = []
+
+      // if there are parameters
+      if (next == comma) {
+        // skip the comma
+        next = data.readUInt8(offset++)
+
+        while (next != semi) {
+          // consume param
+          const param = parseFloat(parseSizedString())
+
+          params.push(param)
+
+          // if we haven't reached the end of the command
+          // keep consuming
+          if (next != semi) {
+            // skip comma
+            next = data.readUInt8(offset++)
+          }
+        }
+      }
+      return [command, ...params] as any
+    }
+
+
+
+    let commands: Command[] = []
+    while (true) {
+      const command = parseCommand()
+
+      commands.push(command)
+
+      if (offset >= data.length) break
+
+      // skip semi
+      next = data.readUInt8(offset++)
+    }
+    return commands
+  }
 }
 
 export type CanvasCommand = Command.Copy
@@ -82,3 +159,21 @@ export type LayerCommand = Command.Arc | Command.Rect | Command.Start | Command.
   Command.Transform | Command.Push | Command.Pop | Command.Curve
 export type LayerPathCompleteCommand = Command.Cstroke | Command.Cfill
 export type Command = CanvasCommand | LayerCommand | LayerPathCompleteCommand | ['sync', number]
+
+
+export namespace ClientCommand {
+
+  /* CUSTOM COMMANDS FOR NOW */
+  export type Click = ['click', number, number]
+  export const click = (x: number, y: number): Click => ['click', x, y]
+
+  export type MouseMove = ['mousemove', number, number]
+  export const mousemove = (x: number, y: number): MouseMove => ['mousemove', x, y]
+  /* */
+
+  export type Mouse = ['mouse', number, number, number]
+  export const mouse = (x: number, y: number, buttons: Set<MouseButton>) => ['mouse', x, y, [...buttons.values()].reduce((a, b) => a + b, 0)]
+
+  export type ClientCommand = Click | MouseMove | Mouse
+
+}

@@ -1,5 +1,5 @@
 import { Display } from './display/Display'
-import { Command } from '../protocol/Command'
+import { ClientCommand, Command } from '../protocol/Command'
 
 /* 
 // Something like this should work, but it doesn't
@@ -9,20 +9,38 @@ const ipcRenderer = Renderer.ipcRenderer
 */
 const { ipcRenderer } = require('electron')
 
-const display = new Display()
+const display = new Display(
+  mouseEv => {
+    ipcRenderer.send(
+      'event',
+      ClientCommand.mouse(mouseEv.x, mouseEv.y, mouseEv.buttons)
+    )
+  }
+)
 const appDiv = document.getElementById('app')!!
 display.mount(appDiv)
 
+/*
 appDiv.addEventListener('click', ev => {
   const rect = (ev.target as Element).getBoundingClientRect();
   const x = ev.clientX - rect.left; //x position within the element.
   const y = ev.clientY - rect.top;
-  const event = {
-    x, y
-  }
-  console.log('click')
-  ipcRenderer.send('event', event)
+  ipcRenderer.send('event', ClientCommand.click(x, y))
 })
+appDiv.addEventListener('mousemove', ev => {
+  const rect = (ev.target as Element).getBoundingClientRect();
+  const x = ev.clientX - rect.left; //x position within the element.
+  const y = ev.clientY - rect.top;
+  ipcRenderer.send('event', ClientCommand.mousemove(x, y))
+})
+*/
+
+
+/*
+document.addEventListener('keyup', ev => {
+  ipcRenderer.send('event', ClientCommand.)
+})
+*/
 
 ipcRenderer.on('commands', (event: any, commands: Command[]) => {
   commands.forEach(cmd => {
