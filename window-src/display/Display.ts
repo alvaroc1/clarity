@@ -30,8 +30,6 @@ export class Display {
   #onMouse: (ev: MouseEv) => void
 
   constructor(onMouse: (ev: MouseEv) => void) {
-    console.log("Display: CONSTRUCTOR")
-
     const defaultLayer = Layer.create('layer-default', 200, 200)
     const element = document.createElement('div')
     element.className = classes.display
@@ -44,7 +42,6 @@ export class Display {
     }
 
     // setup mouse events
-    /*
     element.addEventListener('mousemove', ev => {
       this.#onMouse({
         x: ev.clientX,
@@ -52,13 +49,8 @@ export class Display {
         buttons: this.#mouseButtonsPressed,
       })
     });
-
-    */
     element.addEventListener('mousedown', ev => {
       this.#mouseButtonsPressed = this.#numberToButtonSet(ev.buttons)
-      console.log("DOWN")
-      console.log(ev.button)
-      console.log(ev.buttons)
       console.log(this.#mouseButtonsPressed)
       this.#onMouse({
         x: ev.clientX,
@@ -68,9 +60,6 @@ export class Display {
     });
     element.addEventListener('mouseup', ev => {
       this.#mouseButtonsPressed = this.#numberToButtonSet(ev.buttons)
-      console.log("UP")
-      console.log(ev.button)
-      console.log(this.#mouseButtonsPressed)
       this.#onMouse({
         x: ev.clientX,
         y: ev.clientY,
