@@ -18,6 +18,8 @@ app.on('ready', async event => {
     socket.on('data', data => {
       let commands: Command[] = Command.parseFromBuffer(data)
 
+      //commands.forEach(c => console.log(c))
+
       session.send(commands)
 
       try {

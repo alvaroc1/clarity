@@ -399,7 +399,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@electron/get@npm:^1.0.1, @electron/get@npm:^1.6.0, @electron/get@npm:^1.9.0":
+"@electron/get@npm:^1.0.1, @electron/get@npm:^1.14.1, @electron/get@npm:^1.6.0, @electron/get@npm:^1.9.0":
   version: 1.14.1
   resolution: "@electron/get@npm:1.14.1"
   dependencies:
@@ -1045,10 +1045,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:^14.6.2":
-  version: 14.18.21
-  resolution: "@types/node@npm:14.18.21"
-  checksum: 4ed35b76609647a4e36a194702e31cdda9ed42174ddaf7937bc5498984e98a99e8a42ea895ea17dd9c5ec18080112c29ab670c34f90eb9f7a4703b85b31e34fa
+"@types/node@npm:^16.11.26":
+  version: 16.11.43
+  resolution: "@types/node@npm:16.11.43"
+  checksum: 96d09e68347c49ebf84fe1443360edc3f98336f0794256abc8e4f29ef3070546357cae17083d6fd9767b631239367c4f245fe64accff4af057d17bd6694f0b2b
   languageName: node
   linkType: hard
 
@@ -1761,7 +1761,7 @@ __metadata:
     "@types/node": 18.0.0
     "@types/react": 18.0.14
     "@types/react-dom": 18.0.5
-    electron: 13.2.1
+    electron: 19.0.8
     jss: 10.9.0
     react: 18.2.0
     react-devtools: ^4.10.1
@@ -2546,16 +2546,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"electron@npm:13.2.1":
-  version: 13.2.1
-  resolution: "electron@npm:13.2.1"
+"electron@npm:19.0.8":
+  version: 19.0.8
+  resolution: "electron@npm:19.0.8"
   dependencies:
-    "@electron/get": ^1.0.1
-    "@types/node": ^14.6.2
+    "@electron/get": ^1.14.1
+    "@types/node": ^16.11.26
     extract-zip: ^1.0.3
   bin:
     electron: cli.js
-  checksum: 836537d387e574085d5a3df74414d36a21c2b5741609f2d9bd90c2fa718d99c8054e0e893f4ca4292ac852647d49b9bcaa0bf226acc16dac5852db37e9a83668
+  checksum: cbd4c11058eb3c656c4f589cd7b3a58b6ce2f9ac773b369c453a690bfca7e3b8c96939555b0cfce9a2afcd1af9b8d05fffaa3c45375bf3f2eb0c09735ccd5525
   languageName: node
   linkType: hard
 
