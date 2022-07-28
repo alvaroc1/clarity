@@ -102,10 +102,11 @@ export class Display {
     this.#defaultLayer.mount(this.#element)
   }
 
-  flush = () => {
+  flush = (callback: () => void) => {
     window.requestAnimationFrame(() => {
       this.#tasks.forEach(t => t())
       this.#tasks = []
+      callback();
     })
   }
 
@@ -184,7 +185,7 @@ export class Display {
     const layer = this.#getLayer(c[1])
     switch (c[0]) {
       case 'rect': layer.rect(c[2], c[3], c[4], c[5]); break;
-      case 'arc': layer.arc(c[2], c[3], c[4], c[5], c[6], c[7] > 0); break;
+      case 'arc': layer.arc(c[2], c[3], c[4], c[5], c[6], c[7]); break;
       case 'size': layer.resize(c[2], c[3]); break;
       case 'start': layer.start(c[2], c[3]); break;
       case 'line': layer.line(c[2], c[3]); break;
@@ -204,8 +205,8 @@ export class Display {
     const layer = this.#getLayer(c[2])
     layer.setChannelMask(c[1])
     switch (c[0]) {
-      case 'cstroke': layer.cstroke(c[3], c[4], c[5], c[6], c[7], c[8], c[9]); break;
-      case 'cfill': layer.cfill(c[3], c[4], c[5], c[6]); break;
+      case 'cstroke': layer.cstroke(c[3], c[4], c[5], c[6][0], c[6][1], c[6][2], c[6][3]); break;
+      case 'cfill': layer.cfill(c[3][0], c[3][1], c[3][2], c[3][3]); break;
       default: assertUnreachable(c)
     }
   }

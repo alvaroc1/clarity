@@ -1,4 +1,3 @@
-import { assert } from "console"
 import { ChannelMask } from "./ChannelMask"
 
 export enum MouseButton {
@@ -8,9 +7,6 @@ export enum MouseButton {
   ScrollUp,
   ScrollDown,
 }
-
-/** Each parameter includes it's size for efficient parsing, but we don't need that yet */
-const stripParamSize = (param: string) => param.replace(/^[0-9]+\./, '')
 
 export namespace Cap {
   export const Butt = 0
@@ -26,17 +22,19 @@ export namespace Join {
 }
 export type Join = typeof Join.Bevel | typeof Join.Miter | typeof Join.Round
 
+export type Rgba = [r: number, g: number, b: number, a: number]
+
 /** Guacamole command */
 export namespace Command {
   type LayerCmd<CommandName extends string, X extends any[]> = [CommandName, number, ...X]
   type LayerPathCompleteCmd<CommandName extends string, X extends any[]> = [CommandName, ChannelMask, number, ...X]
 
   export type Copy = [_: 'copy', srclayer: number, sx: number, sy: number, sw: number, sh: number, cm: ChannelMask, dstlayer: number, dx: number, dy: number]
-  export const copy = (srclayer: number, sx: number, sy: number, sw: number, sh: number, cm: ChannelMask, dstlayer: number, dx: number, dy: number) =>
+  export const copy = (srclayer: number, sx: number, sy: number, sw: number, sh: number, cm: ChannelMask, dstlayer: number, dx: number, dy: number): Copy =>
     ['copy', srclayer, sx, sy, sw, sh, cm, dstlayer, dx, dy]
 
-  export type Arc = LayerCmd<'arc', [x: number, y: number, radius: number, start: number, end: number, negative: number]>
-  export const arc = (layer: number, x: number, y: number, radius: number, start: number, end: number, negative: number): Arc =>
+  export type Arc = LayerCmd<'arc', [x: number, y: number, radius: number, start: number, end: number, negative: boolean]>
+  export const arc = (layer: number, x: number, y: number, radius: number, start: number, end: number, negative: boolean): Arc =>
     ['arc', layer, x, y, radius, start, end, negative]
 
   export type Rect = LayerCmd<'rect', [x: number, y: number, width: number, height: number]>
@@ -45,7 +43,7 @@ export namespace Command {
   export type Size = LayerCmd<'size', [width: number, height: number]>
   export const size = (layer: number, width: number, height: number): Size => ['size', layer, width, height]
 
-  export type Move = LayerCmd<'move', [x: number, height: number]>
+  export type Move = LayerCmd<'move', [x: number, y: number]>
   export const move = (layer: number, x: number, y: number): Move => ['move', layer, x, y]
 
   export type Start = LayerCmd<'start', [x: number, y: number]>
@@ -73,83 +71,140 @@ export namespace Command {
   export type Curve = LayerCmd<'curve', [cp1x: number, cp1y: number, cp2x: number, cp2y: number, x: number, y: number]>
   export const curve = (layer: number, cp1x: number, cp1y: number, cp2x: number, cp2y: number, x: number, y: number): Curve => ['curve', layer, cp1x, cp1y, cp2x, cp2y, x, y]
 
-  export type Cstroke = LayerPathCompleteCmd<'cstroke', [cap: Cap, join: Join, thickness: number, r: number, g: number, b: number, a: number]>
-  export const cstroke = (layer: number, mask: ChannelMask): Cstroke => ['cstroke', mask, layer, Cap.Butt, Join.Bevel, 5, 100, 200, 50, 1]
+  export type Cstroke = LayerPathCompleteCmd<'cstroke', [cap: Cap, join: Join, thickness: number, color: Rgba]>
+  export const cstroke = (layer: number, mask: ChannelMask, cap: Cap, join: Join, thickness: number, color: Rgba): Cstroke =>
+    ['cstroke', mask, layer, cap, join, thickness, color]
 
-  export type Cfill = LayerPathCompleteCmd<'cfill', [r: number, g: number, b: number, a: number]>
-  export const cfill = (layer: number, mask: ChannelMask, r: number, g: number, b: number, a: number): Cfill => ['cfill', mask, layer, r, g, b, a]
+  export type Cfill = LayerPathCompleteCmd<'cfill', [color: Rgba]>
+  export const cfill = (layer: number, mask: ChannelMask, color: Rgba): Cfill => ['cfill', mask, layer, color]
 
-  export const parse = (cmdStr: string): Command => {
-    const [cmd, ...rest] = cmdStr.trim().split(',').map(stripParamSize)
-    return [cmd, ...rest.map(v => parseFloat(v))] as any as Command
-  }
+  export type Sync = ['sync', number]
+  export const sync = (t: number): Sync => ['sync', t]
 
-  const dot = '.'.charCodeAt(0)
-  const comma = ','.charCodeAt(0)
-  const semi = ';'.charCodeAt(0)
-
-  export const parseFromBuffer = (data: Buffer): Command[] => {
-    let offset = 0
-    let next = data.readUInt8(offset++);
-
-    const parseSize = (): number => {
-      let commandSizeChars: number[] = []
-      while (next != dot) {
-        commandSizeChars.push(next)
-        next = data.readUInt8(offset++)
-      }
-      return parseInt(String.fromCharCode(...commandSizeChars), 10)
+  export const fromInstruction = (params: string[]): Command => {
+    const [opcode, ...p] = params
+    switch (opcode) {
+      case 'copy':
+        return copy(
+          parseInt(p[0], 10), // srclayer
+          parseFloat(p[1]),   // sx
+          parseFloat(p[2]),   // sy
+          parseFloat(p[3]),   // sw
+          parseFloat(p[4]),   // sh 
+          parseInt(p[5], 10) as ChannelMask,
+          parseInt(p[6], 10), // dstlayer
+          parseFloat(p[7]),   // dx
+          parseFloat(p[8]),    // dy
+        )
+      case 'arc':
+        return arc(
+          parseInt(p[0], 10), // layer
+          parseFloat(p[1]),   // x
+          parseFloat(p[2]),   // y
+          parseFloat(p[3]),   // radius
+          parseFloat(p[4]),   // start
+          parseFloat(p[5]),   // end
+          parseInt(p[6], 10) == 1, // negative
+        )
+      case 'rect':
+        return rect(
+          parseInt(p[0], 10), // layer
+          parseFloat(p[1]),   // x
+          parseFloat(p[2]),   // y
+          parseFloat(p[3]),   // width
+          parseFloat(p[4]),   // height
+        )
+      case 'size':
+        return size(
+          parseInt(p[0], 10), // layer
+          parseFloat(p[1]),   // width
+          parseFloat(p[2]),   // height
+        )
+      case 'move':
+        return move(
+          parseInt(p[0], 10), // layer
+          parseFloat(p[1]),   // x
+          parseFloat(p[2]),   // y
+        )
+      case 'start':
+        return start(
+          parseInt(p[0], 10), // layer
+          parseFloat(p[1]),   // x
+          parseFloat(p[2]),   // y
+        )
+      case 'close':
+        return close(
+          parseInt(p[0], 10), // layer
+        )
+      case 'push':
+        return push(
+          parseInt(p[0], 10), // layer
+        )
+      case 'pop':
+        return pop(
+          parseInt(p[0], 10), // layer
+        )
+      case 'identity':
+        return identity(
+          parseInt(p[0], 10), // layer
+        )
+      case 'transform':
+        return transform(
+          parseInt(p[0], 10), // layer
+          parseFloat(p[1]),
+          parseFloat(p[2]),
+          parseFloat(p[3]),
+          parseFloat(p[4]),
+          parseFloat(p[5]),
+          parseFloat(p[6]),
+        )
+      case 'line':
+        return line(
+          parseInt(p[0], 10), // layer
+          parseFloat(p[1]),   // x
+          parseFloat(p[2]),   // y
+        )
+      case 'cure':
+        return curve(
+          parseInt(p[0], 10), // layer
+          parseFloat(p[1]),
+          parseFloat(p[2]),
+          parseFloat(p[3]),
+          parseFloat(p[4]),
+          parseFloat(p[5]),
+          parseFloat(p[6]),
+        )
+      case 'cstroke':
+        return cstroke(
+          parseInt(p[1], 10), // layer
+          parseInt(p[0], 10) as ChannelMask,
+          parseInt(p[2], 10) as Cap,
+          parseInt(p[3], 10) as Join,
+          parseFloat(p[4]),   // thickness
+          [
+            parseInt(p[5], 10),   // r
+            parseInt(p[6], 10),   // g
+            parseInt(p[7], 10),   // b
+            parseFloat(p[9]),     // a
+          ]
+        )
+      case 'cfill':
+        return cfill(
+          parseInt(p[1], 10), // layer
+          parseInt(p[0], 10) as ChannelMask,
+          [
+            parseInt(p[2], 10),   // r
+            parseInt(p[3], 10),   // g
+            parseInt(p[4], 10),   // b
+            parseFloat(p[5]),     // a
+          ]
+        )
+      case 'sync':
+        return sync(
+          parseInt(p[0], 10) // t
+        )
+      default: throw `Unexpected: ${params}`
     }
-
-    const parseSizedString = (): string => {
-      const size = parseSize()
-      const s = data.toString(undefined, offset, offset + size)
-      offset += size
-      next = data.readUInt8(offset++)
-      return s
-    }
-
-    const parseCommand = (): Command => {
-      const command = parseSizedString()
-
-      let params: number[] = []
-
-      // if there are parameters
-      if (next == comma) {
-        // skip the comma
-        next = data.readUInt8(offset++)
-
-        while (next != semi) {
-          // consume param
-          const param = parseFloat(parseSizedString())
-
-          params.push(param)
-
-          // if we haven't reached the end of the command
-          // keep consuming
-          if (next != semi) {
-            // skip comma
-            next = data.readUInt8(offset++)
-          }
-        }
-      }
-      return [command, ...params] as any
-    }
-
-
-
-    let commands: Command[] = []
-    while (true) {
-      const command = parseCommand()
-
-      commands.push(command)
-
-      if (offset >= data.length) break
-
-      // skip semi
-      next = data.readUInt8(offset++)
-    }
-    return commands
   }
 }
 
@@ -172,8 +227,11 @@ export namespace ClientCommand {
   /* */
 
   export type Mouse = ['mouse', number, number, number]
-  export const mouse = (x: number, y: number, buttons: Set<MouseButton>) => ['mouse', x, y, [...buttons.values()].reduce((a, b) => a + b, 0)]
+  export const mouse = (x: number, y: number, buttons: Set<MouseButton>): Mouse => ['mouse', x, y, [...buttons.values()].reduce((a, b) => a + b, 0)]
 
-  export type ClientCommand = Click | MouseMove | Mouse
+  export type Sync = ['sync', number]
+  export const sync = (t: number): Sync => ['sync', t]
+
+  export type ClientCommand = Click | MouseMove | Mouse | Sync
 
 }

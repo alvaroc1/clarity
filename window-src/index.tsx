@@ -1,13 +1,8 @@
 import { Display } from './display/Display'
 import { ClientCommand, Command } from '../protocol/Command'
+import Renderer from 'electron/renderer'
 
-/* 
-// Something like this should work, but it doesn't
-// something to do with commonjs vs modules
-import { Renderer } from 'electron'
 const ipcRenderer = Renderer.ipcRenderer
-*/
-const { ipcRenderer } = require('electron')
 
 const display = new Display(
   mouseEv => {
@@ -46,7 +41,12 @@ ipcRenderer.on('commands', (event: any, commands: Command[]) => {
   commands.forEach(cmd => {
     // flush the display (run task on animation frame) on sync
     if (cmd[0] == 'sync') {
-      display.flush()
+      display.flush(() => {
+        ipcRenderer.send(
+          'event',
+          ClientCommand.sync(cmd[1])
+        )
+      })
     } else {
       display.exec(cmd)
     }

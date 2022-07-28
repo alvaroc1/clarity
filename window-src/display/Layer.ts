@@ -124,7 +124,6 @@ export class Layer {
       const tmp = document.createElement('canvas') as HTMLCanvasElement
 
       document.body.appendChild(tmp)
-      console.log(tmp)
       tmp.width = this.#canvas.width
       tmp.height = this.#canvas.height
       const tmpCtx = tmp.getContext('2d')!!

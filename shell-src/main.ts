@@ -2,6 +2,8 @@ import { app, ipcMain } from 'electron'
 import * as net from 'net'
 import { Session } from './Session'
 import { Command } from '../protocol/Command'
+import { Parser } from '../protocol/Parser'
+
 
 let session: Session | null = null
 
@@ -15,12 +17,13 @@ app.on('ready', async event => {
 
     socket.resume()
 
+    const parser = new Parser((cmd) => {
+      const parsed = Command.fromInstruction(cmd)
+      session.send([parsed])
+    })
+
     socket.on('data', data => {
-      let commands: Command[] = Command.parseFromBuffer(data)
-
-      //commands.forEach(c => console.log(c))
-
-      session.send(commands)
+      parser.parse(data)
 
       try {
         //if (!socketClosed) socket.write("mouse,0,0,0")
@@ -51,9 +54,7 @@ app.on('ready', async event => {
     })
 
     ipcMain.on('event', (_, data) => {
-      console.log(data)
       const encoded = encodeCommand(data)
-      console.log(encoded)
       socket.write(encoded + ";")
     })
   })
