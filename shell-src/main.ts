@@ -1,13 +1,18 @@
-import { app, ipcMain } from 'electron'
+import { app, ipcMain, Tray } from 'electron'
+import path from 'path'
 import * as net from 'net'
 import { Session } from './Session'
-import { Command } from '../protocol/Command'
+import { ServerInstruction } from '../guacamole/ServerInstruction'
 import { Parser } from '../protocol/Parser'
-
 
 let session: Session | null = null
 
 app.on('ready', async event => {
+  const tray = new Tray(path.join(__dirname, "random-icon.jpeg"))
+  tray.setToolTip("Clarity Tray")
+
+
+
   const server = net.createServer({ pauseOnConnect: true }, socket => {
     console.log("CONNECTED")
 
@@ -18,7 +23,7 @@ app.on('ready', async event => {
     socket.resume()
 
     const parser = new Parser((cmd) => {
-      const parsed = Command.fromInstruction(cmd)
+      const parsed = ServerInstruction.fromStringArray(cmd)
       session.send([parsed])
     })
 
@@ -69,6 +74,11 @@ app.on('ready', async event => {
   })
 
 });
+
+// prevent app from quiting
+app.on('window-all-closed', () => {
+
+})
 
 const encodeCommand = (command: string[]): string => {
   return command.map(segment => {

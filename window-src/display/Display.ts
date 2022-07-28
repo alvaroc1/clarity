@@ -1,5 +1,6 @@
 import { Layer } from './Layer'
-import { Command, LayerCommand, LayerPathCompleteCommand, MouseButton } from '../../protocol/Command'
+import { ServerInstruction } from '../../guacamole/ServerInstruction'
+import { MouseButton } from '../../protocol/Command'
 import jss from 'jss'
 import { ChannelMask } from '../../protocol/ChannelMask'
 const { ipcRenderer } = require('electron')
@@ -110,7 +111,7 @@ export class Display {
     })
   }
 
-  exec = (c: Command): void => {
+  exec = (c: ServerInstruction): void => {
     this.#tasks.push(() => {
       switch (c[0]) {
         case 'size':
@@ -173,7 +174,8 @@ export class Display {
           break;
 
         case 'sync':
-          throw 'There should not be control commands here'
+        case 'select':
+          throw `There should not be control commands here, got: ${c[0]}`
 
         default:
           assertUnreachable(c)
@@ -181,7 +183,7 @@ export class Display {
     })
   }
 
-  #execLayerCommand = (c: LayerCommand): void => {
+  #execLayerCommand = (c: ServerInstruction.LayerCommand): void => {
     const layer = this.#getLayer(c[1])
     switch (c[0]) {
       case 'rect': layer.rect(c[2], c[3], c[4], c[5]); break;
@@ -201,7 +203,7 @@ export class Display {
     }
   }
 
-  #execLayerPathCompleteCommand = (c: LayerPathCompleteCommand): void => {
+  #execLayerPathCompleteCommand = (c: ServerInstruction.LayerPathCompleteCommand): void => {
     const layer = this.#getLayer(c[2])
     layer.setChannelMask(c[1])
     switch (c[0]) {

@@ -14,7 +14,6 @@ const classes = jss.createStyleSheet({
 }).attach().classes
 
 export class Layer {
-  #label: string
   #canvas: HTMLCanvasElement
   #ctx: CanvasRenderingContext2D
   #container: HTMLDivElement
@@ -35,8 +34,6 @@ export class Layer {
   }
 
   private constructor(label: string, width: number, height: number) {
-    console.log("Layer: constructor")
-    this.#label = label
     const canvas = document.createElement('canvas')
     canvas.width = width * window.devicePixelRatio
     canvas.height = height * window.devicePixelRatio
@@ -62,10 +59,7 @@ export class Layer {
   }
 
   setChannelMask = (mask: ChannelMask): void => {
-    //console.log(`Not setting channel mask: ${mask}`)
     this.#ctx.globalCompositeOperation = ChannelMask.toHtmlCanvasCompositeOperation(mask)
-    //console.log(mask)
-    //console.log(this.#ctx.globalCompositeOperation)
   }
 
   appendChild = (child: Layer): void => {

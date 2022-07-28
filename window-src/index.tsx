@@ -1,5 +1,6 @@
 import { Display } from './display/Display'
-import { ClientCommand, Command } from '../protocol/Command'
+import { ServerInstruction } from '../guacamole/ServerInstruction'
+import { ClientInstruction } from '../guacamole/ClientInstruction'
 import Renderer from 'electron/renderer'
 
 const ipcRenderer = Renderer.ipcRenderer
@@ -8,7 +9,7 @@ const display = new Display(
   mouseEv => {
     ipcRenderer.send(
       'event',
-      ClientCommand.mouse(mouseEv.x, mouseEv.y, mouseEv.buttons)
+      ClientInstruction.mouse(mouseEv.x, mouseEv.y, mouseEv.buttons)
     )
   }
 )
@@ -37,14 +38,14 @@ document.addEventListener('keyup', ev => {
 })
 */
 
-ipcRenderer.on('commands', (event: any, commands: Command[]) => {
+ipcRenderer.on('commands', (event: any, commands: ServerInstruction[]) => {
   commands.forEach(cmd => {
     // flush the display (run task on animation frame) on sync
     if (cmd[0] == 'sync') {
       display.flush(() => {
         ipcRenderer.send(
           'event',
-          ClientCommand.sync(cmd[1])
+          ClientInstruction.sync(cmd[1])
         )
       })
     } else {

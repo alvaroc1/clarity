@@ -1,5 +1,5 @@
 import { BrowserWindow, ipcMain } from 'electron'
-import { Command } from '../protocol/Command'
+import { ServerInstruction } from '../guacamole/ServerInstruction'
 
 /** Represents a single connection and a single window being controlled by a server 
  * for now, a session is just something that can receive commands
@@ -7,7 +7,7 @@ import { Command } from '../protocol/Command'
 export class Session {
 
   // keep track of any commands before we loaded the window
-  #commandsBeforeLoaded: Command[] = []
+  #commandsBeforeLoaded: ServerInstruction[] = []
   #indexLoaded = false
 
   #debug = true
@@ -38,7 +38,7 @@ export class Session {
     })
   }
 
-  send(commands: Command[]) {
+  send(commands: ServerInstruction[]) {
     if (!this.#indexLoaded) {
       commands.forEach(command => this.#commandsBeforeLoaded.push(command))
     } else {

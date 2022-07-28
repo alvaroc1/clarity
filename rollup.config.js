@@ -21,9 +21,9 @@ export default [
          }),
          copy({
             targets: [
-               { src: './assets/index.html', dest: './build/' }
+               { src: './assets/*', dest: './build/' },
             ]
-         })
+         }),
       ]
    },
    // react
