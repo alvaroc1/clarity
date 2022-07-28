@@ -29,7 +29,9 @@ export class Session {
 
   constructor() {
     ipcMain.on('resize', (event: any, width: number, height: number) => {
-      this.#win.setContentSize(width, height, false)
+      if (this.#win.isDestroyed()) {
+        this.#win.setContentSize(width, height, false)
+      }
     })
     this.#win.loadFile("build/index.html").then(_ => {
       this.#indexLoaded = true
