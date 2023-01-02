@@ -1,21 +1,63 @@
-import { app, ipcMain, Menu, Tray } from 'electron'
+import { app, BrowserWindow, ipcMain, Menu, Tray } from 'electron'
 import path from 'path'
 import * as net from 'net'
 import { Session } from './Session'
 import { ServerInstruction } from '../guacamole/ServerInstruction'
 import { Parser } from '../protocol/Parser'
+import { Server } from './Server'
+import { SettingsWindow } from '../shared/SettingsWindow'
+import { Clarity } from './Clarity'
+
+app.on('ready', async () => {
+  const quitServer = await Clarity.run()
+
+  app.on('before-quit', async () => {
+    await quitServer()
+  })
+})
+
+/*
+
+let clarityPort = 9005
+let newClarityPort = 9005
+
+let runningServer: RunningServer | null = null
 
 app.on('ready', async event => {
-  const tray = new Tray(path.join(__dirname, "diamondTemplate@2x.png"))
+  const tray = new Tray(path.join(__dirname, "clarityTemplate@2x.png"))
   tray.setToolTip("Clarity Settings")
 
+  SettingsWindow.initialize(
+    newClarityPort => {
+      if (newClarityPort != clarityPort) {
+        clarityPort = newClarityPort
+        runningServer!.close()
+        runningServer = Server.run(clarityPort)
+      }
+    }
+  )
+  ipcMain.on('port-changed', (_, port) => {
+    newClarityPort = port
+  })
+
+  runningServer = Server.run(clarityPort)
+
+  const openSettings = () => {
+    SettingsWindow.show(clarityPort)
+    //settingsWindow.loadFile("build/index.html")
+  }
+
   const contextMenu = Menu.buildFromTemplate([
-    {label: 'About Clarity...'},
-    {type: 'separator'},
-    {label: 'Quit', role: 'quit'}
+    { label: 'Running: Port 9005', icon: path.join(__dirname, "on@2x.png") },
+    { type: 'separator' },
+    { label: 'Settings...', click: openSettings, icon: path.join(__dirname, "settings@2x.png") },
+    { label: 'About Clarity', role: 'about', icon: path.join(__dirname, "clarityTemplate@2x.png") },
+    { type: 'separator' },
+    { label: 'Quit Clarity', role: 'quit' }
   ])
 
   tray.setContextMenu(contextMenu)
+
 
   // TODO: how to do this?
   //Menu.setApplicationMenu(contextMenu)
@@ -26,9 +68,10 @@ app.on('ready', async event => {
 
     let socketClosed = false
 
-    const session = Session.create()
-
-    socket.resume()
+    const session = Session.create(() => {
+      app.dock.show()
+      socket.resume()
+    })
 
     const parser = new Parser((cmd) => {
       const parsed = ServerInstruction.fromStringArray(cmd)
@@ -85,7 +128,17 @@ app.on('ready', async event => {
 
 // prevent app from quiting
 app.on('window-all-closed', () => {
+  app.dock.hide()
+})
 
+app.setAboutPanelOptions({
+  applicationName: 'Clarity',
+  applicationVersion: 'v0.0.1',
+  authors: [
+    "Alvaro Carrasco"
+  ],
+  copyright: '© 2022 Alvaro Carrasco',
+  website: 'https://github.com/alvaroc1/clarity'
 })
 
 const encodeCommand = (command: string[]): string => {
@@ -94,3 +147,4 @@ const encodeCommand = (command: string[]): string => {
     return seg.length + "." + seg
   }).join(",")
 };
+*/

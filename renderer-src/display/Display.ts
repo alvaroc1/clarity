@@ -1,13 +1,15 @@
 import { Layer } from './Layer'
 import { ServerInstruction } from '../../guacamole/ServerInstruction'
-import { MouseButton } from '../../protocol/Command'
+import { MouseButton } from '../../drawing/MouseButton'
 import jss from 'jss'
-import { ChannelMask } from '../../protocol/ChannelMask'
+import { ChannelMask } from '../../drawing/ChannelMask'
 const { ipcRenderer } = require('electron')
 
 const classes = jss.createStyleSheet({
   display: {
-    position: 'relative'
+    position: 'relative',
+    width: '100%',
+    height: '100%'
   }
 }).attach().classes
 
@@ -135,10 +137,13 @@ export class Display {
             case ChannelMask.SRC:
               // if this is a copy operation, 
               // it's actually better if we clear a rect and use source-over
+              // TODO: why?
               dstLayer.context.clearRect(dx, dy, sw, sh)
-              dstLayer.context.globalCompositeOperation = 'source-over';
-              break;
-            default: dstLayer.context.globalCompositeOperation = (ChannelMask.toHtmlCanvasCompositeOperation(cm) as GlobalCompositeOperation); break;
+              dstLayer.context.globalCompositeOperation = 'source-over'
+              break
+            default: 
+              dstLayer.context.globalCompositeOperation = ChannelMask.toHtmlCanvasCompositeOperation(cm)
+              break
           }
 
           dstLayer.context.drawImage(

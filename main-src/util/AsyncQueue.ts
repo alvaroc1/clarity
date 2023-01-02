@@ -1,5 +1,5 @@
 
-export class AsyncQueue<T> {
+class AsyncQueue<T> {
   #buffer: T[] = []
   #consumers: Array<(v: T[]) => void> = []
 

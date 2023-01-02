@@ -1,5 +1,6 @@
-import { Cap, Join } from '../../protocol/Command'
-import { ChannelMask } from '../../protocol/ChannelMask'
+import { Cap } from "../../drawing/Cap"
+import { Join } from '../../drawing/Join'
+import { ChannelMask } from '../../drawing/ChannelMask'
 import jss from 'jss'
 
 const classes = jss.createStyleSheet({

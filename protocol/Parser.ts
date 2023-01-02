@@ -1,4 +1,3 @@
-import assert from "node:assert/strict"
 
 /**
  * The parser is always in the process of either reading the size of a parameter
@@ -27,7 +26,6 @@ export class Parser {
   #size: number = 0
   #sizeChars: number[] = []
   #data: string = ''
-
   #state: State = State.size
 
   parse(buffer: Buffer) {

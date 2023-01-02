@@ -1,5 +1,7 @@
-import { ChannelMask } from "../protocol/ChannelMask"
-import { Cap, Join, Rgba } from "../protocol/Command"
+import { ChannelMask } from "../drawing/ChannelMask"
+import { Cap } from "../drawing/Cap"
+import { Join } from "../drawing/Join"
+import { Rgba } from "../drawing/Rgba"
 
 /** Guacamole command */
 export namespace ServerInstruction {
@@ -145,7 +147,7 @@ export namespace ServerInstruction {
           parseFloat(p[1]),   // x
           parseFloat(p[2]),   // y
         )
-      case 'cure':
+      case 'curve':
         return curve(
           parseInt(p[0], 10), // layer
           parseFloat(p[1]),
@@ -166,7 +168,7 @@ export namespace ServerInstruction {
             parseInt(p[5], 10),   // r
             parseInt(p[6], 10),   // g
             parseInt(p[7], 10),   // b
-            parseFloat(p[9]),     // a
+            parseInt(p[8], 10),   // a
           ]
         )
       case 'cfill':
@@ -184,7 +186,9 @@ export namespace ServerInstruction {
         return sync(
           parseInt(p[0], 10) // t
         )
-      default: throw `Unexpected: ${params}`
+      default:
+        console.error(`Unhandled: ${params}`)
+        throw `Unexpected: ${params}`
     }
   }
 
@@ -196,9 +200,9 @@ export namespace ServerInstruction {
 
 }
 
-export type ServerInstruction = 
+export type ServerInstruction =
   ServerInstruction.Select |
-  ServerInstruction.CanvasCommand | 
-  ServerInstruction.LayerCommand | 
-  ServerInstruction.LayerPathCompleteCommand | 
+  ServerInstruction.CanvasCommand |
+  ServerInstruction.LayerCommand |
+  ServerInstruction.LayerPathCompleteCommand |
   ['sync', number]

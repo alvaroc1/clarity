@@ -7,7 +7,7 @@ import replace from '@rollup/plugin-replace'
 export default [
    // electron
    {
-      input: 'shell-src/main.ts',
+      input: 'main-src/main.ts',
       output: [
          {
             file: 'build/main.js',
@@ -17,7 +17,7 @@ export default [
       ],
       plugins: [
          typescript({
-            tsconfig: './shell.tsconfig.json'
+            tsconfig: './main.tsconfig.json'
          }),
          copy({
             targets: [
@@ -28,7 +28,7 @@ export default [
    },
    // react
    {
-      input: 'window-src/index.tsx',
+      input: 'renderer-src/index.tsx',
       output: [
          {
             file: 'build/index.js',
@@ -41,7 +41,33 @@ export default [
       ],
       plugins: [
          typescript({
-            tsconfig: './window.tsconfig.json'
+            tsconfig: './renderer.tsconfig.json'
+         }),
+         commonjs({
+            include: './node_modules/**',
+         }),
+         nodeResolve(),
+         replace({
+            'process.env.NODE_ENV': JSON.stringify('production'),
+            preventAssignment: true,
+         }),
+      ]
+   },
+   {
+      input: 'renderer-src/settings.tsx',
+      output: [
+         {
+            file: 'build/settings.js',
+            format: 'cjs',
+            sourcemap: true,
+            globals: [
+               'react',
+            ],
+         },
+      ],
+      plugins: [
+         typescript({
+            tsconfig: './renderer.tsconfig.json'
          }),
          commonjs({
             include: './node_modules/**',

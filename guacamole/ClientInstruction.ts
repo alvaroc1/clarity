@@ -1,4 +1,4 @@
-import { MouseButton } from "../protocol/Command"
+import { MouseButton } from "../drawing/MouseButton"
 
 export namespace ClientInstruction {
   export type Args = [_: 'args', protocolVersion: string, ...other: string[]]
@@ -18,12 +18,18 @@ export namespace ClientInstruction {
   export type Sync = ['sync', number]
   export const sync = (t: number): Sync => ['sync', t]
 
+  export const encode = (command: ClientInstruction): string => {
+    return command.map(v => {
+      const s = v.toString()
+      return `${s.length}.${s}`
+    }).join(',') + ';'
+  }
+
 }
 
-
-export type ClientInstruction = 
+export type ClientInstruction =
   ClientInstruction.Args |
-  ClientInstruction.Click | 
-  ClientInstruction.MouseMove | 
-  ClientInstruction.Mouse | 
+  ClientInstruction.Click |
+  ClientInstruction.MouseMove |
+  ClientInstruction.Mouse |
   ClientInstruction.Sync
