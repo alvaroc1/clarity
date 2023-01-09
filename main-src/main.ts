@@ -7,6 +7,10 @@ import { Parser } from '../protocol/Parser'
 import { Server } from './Server'
 import { SettingsWindow } from '../shared/SettingsWindow'
 import { Clarity } from './Clarity'
+import * as electronSquirrelStartup from 'electron-squirrel-startup';
+
+// windows installer wrapper
+if (electronSquirrelStartup) app.quit();
 
 app.on('ready', async () => {
   const quitServer = await Clarity.run()

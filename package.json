@@ -1,5 +1,7 @@
 {
   "name": "clarity",
+  "author": "Alvaro Carrasco",
+  "description": "A remote canvas",
   "version": "0.0.1",
   "main": "build/main.js",
   "license": "MIT",
@@ -7,9 +9,9 @@
     "main2": "ELECTRON_ENABLE_LOGGING=1 rollup -c && cp node_modules/electron/path.txt build/path.txt && electron --trace-warnings .",
     "main": "NODE_OPTIONS=\"--unhandled-rejections=strict\" ELECTRON_ENABLE_LOGGING=1 rollup -c && electron --trace-warnings .",
     "build": "ELECTRON_ENABLE_LOGGING=0 rollup -c && cp node_modules/electron/path.txt build/path.txt",
-    "make-arm64": "electron-forge make --arch=arm64",
-    "make-x64": "electron-forge make --arch=x64",
-    "sign-arm64": "electron-osx-sign out/Clarity-darwin-arm64/Clarity.app --identity='Apple Development' --provisioning-profile=./Clarity_Development.profile",
+    "make-osx": "electron-forge make --targets=dmg --arch=arm64,x64",
+    "make-win": "electron-forge make --targets=squirrel --arch=x64",
+    "-deleted-sign-arm64": "electron-osx-sign out/Clarity-darwin-arm64/Clarity.app --identity='Apple Development' --provisioning-profile=./Clarity_Development.profile",
     "test": "jest"
   },
   "config": {
@@ -31,6 +33,7 @@
     "@types/react": "18.0.14",
     "@types/react-dom": "18.0.5",
     "electron": "22.0.0",
+    "electron-squirrel-startup": "1.0.0",
     "jest": "^28.1.3",
     "react-devtools": "^4.10.1",
     "rollup": "2.77.4-1",

@@ -1,6 +1,10 @@
 name: Build
 on: [push, pull_request]
 jobs: 
+  build_on_linux:
+    runs-on: ubuntu-latest
+  build_on_windows:
+    runs-on: windows-latest
   build_on_mac: 
     runs-on: macos-latest
     timeout-minutes: 30
@@ -30,10 +34,6 @@ jobs:
           # import certificate to keychain
           security import $CERTIFICATE_PATH -P "$P12_PASSWORD" -A -t cert -f pkcs12 -k $KEYCHAIN_PATH
           security list-keychain -d user -s $KEYCHAIN_PATH
-          security list-keychains
-          security find-identity
-          security find-identity -v
-          security find-identity -p codesigning -v
 
           # apply provisioning profile
           mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
@@ -41,6 +41,9 @@ jobs:
       - run: yarn install
       - run: yarn build
       - run: yarn make-arm64
+        env: 
+          APPLEID_PASSWORD: ${{ secrets.APPLEID_PASSWORD }}
+      - run: yarn make-x64
         env: 
           APPLEID_PASSWORD: ${{ secrets.APPLEID_PASSWORD }}
       - uses: actions/upload-artifact@v3

@@ -27,6 +27,13 @@ module.exports = {
         //"background": "./assets/dmg-background.png",
         "format": "ULFO"
       }
-    }
+    },
+    {
+      name: '@electron-forge/maker-squirrel',
+      config: {
+        certificateFile: './cert.pfx',
+        certificatePassword: process.env.CERTIFICATE_PASSWORD,
+      },
+    },
   ]
 }
