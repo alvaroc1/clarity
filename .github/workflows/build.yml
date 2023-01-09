@@ -3,8 +3,20 @@ on: [push, pull_request]
 jobs: 
   build_on_linux:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - run: yarn install
+      - run: yarn build
+      - run: yarn make-osx
+      - uses: actions/checkout@v3
   build_on_windows:
     runs-on: windows-latest
+    timeout-minutes: 30
+    steps:
+      - run: yarn install
+      - run: yarn build
+      - run: yarn make-osx
+      - uses: actions/checkout@v3
   build_on_mac: 
     runs-on: macos-latest
     timeout-minutes: 30
@@ -40,10 +52,7 @@ jobs:
           cp $PP_PATH ~/Library/MobileDevice/Provisioning\ Profiles
       - run: yarn install
       - run: yarn build
-      - run: yarn make-arm64
-        env: 
-          APPLEID_PASSWORD: ${{ secrets.APPLEID_PASSWORD }}
-      - run: yarn make-x64
+      - run: yarn make-osx
         env: 
           APPLEID_PASSWORD: ${{ secrets.APPLEID_PASSWORD }}
       - uses: actions/upload-artifact@v3
