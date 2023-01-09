@@ -8,7 +8,7 @@ jobs:
       - uses: actions/checkout@v3
       - run: yarn install
       - run: yarn build
-      - run: yarn make-deb
+      - run: yarn make-linux
   build_on_windows:
     runs-on: windows-latest
     timeout-minutes: 30
