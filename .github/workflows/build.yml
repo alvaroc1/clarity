@@ -12,7 +12,6 @@ jobs:
           P12_PASSWORD: ${{ secrets.P12_PASSWORD }}
           BUILD_PROVISION_PROFILE_BASE64: ${{ secrets.BUILD_PROVISION_PROFILE_BASE64 }}
           KEYCHAIN_PASSWORD: ${{ secrets.KEYCHAIN_PASSWORD }}
-          APPLEID_PASSWORD: ${{ secrets.APPLEID_PASSWORD }}
         run: |
           # create variables
           CERTIFICATE_PATH=$RUNNER_TEMP/build_certificate.p12
@@ -42,6 +41,8 @@ jobs:
       - run: yarn install
       - run: yarn build
       - run: yarn make-arm64
+        env: 
+          APPLEID_PASSWORD: ${{ secrets.APPLEID_PASSWORD }}
       - uses: actions/upload-artifact@v3
         with:
           name: Clarity-0.0.1-arm64.dmg
