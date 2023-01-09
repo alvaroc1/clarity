@@ -11,6 +11,7 @@
     "build": "ELECTRON_ENABLE_LOGGING=0 rollup -c && cp node_modules/electron/path.txt build/path.txt",
     "make-osx": "electron-forge make --targets=dmg --arch=arm64,x64",
     "make-win": "electron-forge make --targets=squirrel --arch=x64",
+    "make-deb": "electron-forge make --targets=deb --arch=x64",
     "-deleted-sign-arm64": "electron-osx-sign out/Clarity-darwin-arm64/Clarity.app --identity='Apple Development' --provisioning-profile=./Clarity_Development.profile",
     "test": "jest"
   },
