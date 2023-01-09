@@ -34,6 +34,7 @@ jobs:
           security list-keychains
           security find-identity
           security find-identity -v
+          security find-identity -p codesigning -v
 
           # apply provisioning profile
           mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
