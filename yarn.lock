@@ -702,24 +702,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@electron/osx-sign@npm:1.0.1":
-  version: 1.0.1
-  resolution: "@electron/osx-sign@npm:1.0.1"
-  dependencies:
-    compare-version: ^0.1.2
-    debug: ^4.3.4
-    fs-extra: ^10.0.0
-    isbinaryfile: ^4.0.8
-    minimist: ^1.2.6
-    plist: ^3.0.5
-  bin:
-    electron-osx-flat: bin/electron-osx-flat.js
-    electron-osx-sign: bin/electron-osx-sign.js
-  checksum: eb9d2e759ec0123cbdcd6053e94c091aac6233360a1af34953c665ee02c5ddf70b9a7d0314445334a97d5cf0807571534878cfcbd0011d2d7f23a15aa64f2317
-  languageName: node
-  linkType: hard
-
-"@electron/osx-sign@npm:^1.0.1":
+"@electron/osx-sign@npm:1.0.4, @electron/osx-sign@npm:^1.0.1":
   version: 1.0.4
   resolution: "@electron/osx-sign@npm:1.0.4"
   dependencies:
@@ -2714,7 +2697,7 @@ __metadata:
     "@electron-forge/maker-rpm": 6.0.4
     "@electron-forge/maker-squirrel": 6.0.4
     "@electron-forge/maker-zip": 6.0.4
-    "@electron/osx-sign": 1.0.1
+    "@electron/osx-sign": 1.0.4
     "@emotion/react": 11.10.0
     "@emotion/styled": 11.10.0
     "@mui/icons-material": ^5.8.4

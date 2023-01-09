@@ -6,8 +6,10 @@
   "scripts": {
     "main2": "ELECTRON_ENABLE_LOGGING=1 rollup -c && cp node_modules/electron/path.txt build/path.txt && electron --trace-warnings .",
     "main": "NODE_OPTIONS=\"--unhandled-rejections=strict\" ELECTRON_ENABLE_LOGGING=1 rollup -c && electron --trace-warnings .",
-    "make": "electron-forge make --arch=arm64",
-    "sign": "electron-osx-sign out/Clarity.app --identity='Apple Development' --provisioning-profile=./Clarity_Development.profile",
+    "build": "ELECTRON_ENABLE_LOGGING=0 rollup -c && cp node_modules/electron/path.txt build/path.txt",
+    "make-arm64": "electron-forge make --arch=arm64",
+    "make-x64": "electron-forge make --arch=x64",
+    "sign-arm64": "electron-osx-sign out/Clarity-darwin-arm64/Clarity.app --identity='Apple Development' --provisioning-profile=./Clarity_Development.profile",
     "test": "jest"
   },
   "config": {
@@ -20,7 +22,7 @@
     "@electron-forge/maker-rpm": "6.0.4",
     "@electron-forge/maker-squirrel": "6.0.4",
     "@electron-forge/maker-zip": "6.0.4",
-    "@electron/osx-sign": "1.0.1",
+    "@electron/osx-sign": "1.0.4",
     "@rollup/plugin-commonjs": "24.0.0",
     "@rollup/plugin-node-resolve": "13.3.0",
     "@rollup/plugin-replace": "4.0.0",

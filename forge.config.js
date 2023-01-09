@@ -11,12 +11,13 @@ module.exports = {
       "gatekeeper-assess": false,
       "entitlements": "entitlements.plist",
       "entitlements-inherit": "entitlements.plist",
-      "signature-flags": "library"
+      "signature-flags": "library",
+      "keychain": process.env.KEYCHAIN_PATH
     },
     "osxNotarize": {
       "appBundleId": "io.devstack.clarity",
       "appleId": "simplepic@gmail.com",
-      "appleIdPassword": "vjof-rbqb-iqvl-hqol"
+      "appleIdPassword": process.env.APPLEID_PASSWORD
     }
   },
   "makers": [
