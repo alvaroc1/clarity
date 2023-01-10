@@ -17,6 +17,11 @@ jobs:
       - run: yarn install
       - run: yarn build
       - run: yarn make-win
+      - run: dir out/make
+      - uses: actions/upload-artifact@v3
+        with:
+          name: Clarity Setup.exe
+          path: out/make/Clarity Setup.exe
   build_on_mac: 
     runs-on: macos-latest
     timeout-minutes: 30
