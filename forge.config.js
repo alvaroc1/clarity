@@ -22,10 +22,17 @@ module.exports = {
   },
   "makers": [
     {
+      name: '@electron-forge/maker-deb',
+      config: {
+        certificateFile: './cert.pfx',
+        certificatePassword: process.env.CERTIFICATE_PASSWORD,
+      },
+    },
+    {
       "name": "@electron-forge/maker-dmg",
       "config": {
-        //"background": "./assets/dmg-background.png",
-        "format": "ULFO"
+        maintainer: 'Alvaro Carrasco',
+        homepage: 'https://github.com/alvaroc1/clarity'
       }
     },
     {
