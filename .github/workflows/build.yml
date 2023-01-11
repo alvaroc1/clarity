@@ -21,7 +21,7 @@ jobs:
       - uses: actions/upload-artifact@v3
         with:
           name: Clarity Setup.exe
-          path: out\make\squirrel.windows\x64\Clarity Setup.exe
+          path: out\make\squirrel.windows\x64\Clarity-0.0.1 Setup.exe
   build_on_mac: 
     runs-on: macos-latest
     timeout-minutes: 30
