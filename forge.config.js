@@ -2,7 +2,7 @@ module.exports = {
   "packagerConfig": {
     "appBundleId": "io.devstack.clarity",
     "name": "Clarity",
-    "executable-name": "clarity",
+    "executable-name": "Clarity",
     "icon": "clarity.icns",
     "asar": true,
     "osxSign": {
@@ -25,8 +25,7 @@ module.exports = {
       name: '@electron-forge/maker-deb',
       config: {
         certificateFile: './cert.pfx',
-        certificatePassword: process.env.CERTIFICATE_PASSWORD,
-        executableName: "clarity"
+        certificatePassword: process.env.CERTIFICATE_PASSWORD
       },
     },
     {
