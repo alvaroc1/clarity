@@ -3,7 +3,7 @@ import { Menu, Tray } from 'electron'
 import path from 'path'
 import { Server } from './Server'
 import { SettingsWindow } from '../shared/SettingsWindow'
-import { Parser } from '../protocol/Parser'
+import { Parser } from '../guacamole/Parser'
 import { Session } from './Session'
 import { ServerInstruction } from '../guacamole/ServerInstruction'
 import { ClientInstruction } from '../guacamole/ClientInstruction'
@@ -19,39 +19,31 @@ export class Clarity {
   static #status = Status.stopped
 
   static async run(): Promise<() => Promise<void>> {
-    const server = Server.create(({start, write, dispose}) => {
-      // create a session and start listening on the socket when the session loads
-      // dispose the socket when the session is closed (browser window close button)
-      const session = Session.create({
-        onClose: () => dispose(),
-        send: (c) => write(ClientInstruction.encode(c))
+
+    async function startOnPort (port: number) {
+      return await Server.create(port, async (data, write) => {
+        const session = Session.create({
+          onClose: () => {}, //dispose(),
+          send: (c) => write(ClientInstruction.encode(c))
+        })
+  
+        for await (const instruction of Parser.parse(data)) {
+          session.send([ServerInstruction.fromStringArray(instruction)])
+        }
       })
+    }
 
-      // create a parser that will forward commands to the session
-      const parser = new Parser(cmd => {
-        const parsedCommand = ServerInstruction.fromStringArray(cmd)
-        session.send([parsedCommand])
-      })
+    const store = new Store<{ port: number, error: string | null }>()
 
-      // start receiving from the socket
-      start()
+    let server = await startOnPort(store.get('port') | 9002)
 
-      // return the data handler
-      return buf => parser.parse(buf)
-    })
-
-    const startOrRestart = async () => {
+    const restart = async () => {
       const port = store.get('port')
       // restart
-      if (server.status == Status.running) {
-        await server.close().catch(e => console.error(e))
-        rebuildTrayMenu()
-      }
-
-      this.#status = Status.starting
+      await server.close().catch(e => console.error(e))
       rebuildTrayMenu()
 
-      await server.listen(port)
+      await startOnPort(port)
         .then(() => {
           this.#status = Status.running
           settingsWindow.update({
@@ -88,14 +80,13 @@ export class Clarity {
         port: newPort,
         error: null
       })
-      startOrRestart()
+      restart()
     }
 
     const rebuildTrayMenu = () => {
       tray.setContextMenu(this.buildContextMenu(store.get('port'), () => settingsWindow.show()))
     }
 
-    const store = new Store<{ port: number, error: string | null }>()
     store.onDidChange('port', async (newPort) => {
       await handlePortChange(newPort!)
     })
@@ -109,22 +100,18 @@ export class Clarity {
       },
       (newPort) => {
         store.set('port', newPort)
-        if (this.#status === Status.stopped) startOrRestart()
+        if (this.#status === Status.stopped) restart()
       }
     )
 
     const tray = new Tray(path.join(__dirname, "clarityTemplate@2x.png"))
     rebuildTrayMenu()
 
-    startOrRestart()
-
     // returns a function to stop the server
     return async () => {
-      if (server.status === Status.running) {
-        rebuildTrayMenu()
-        await server.close()
-        rebuildTrayMenu()
-      }
+      rebuildTrayMenu()
+      await server.close()
+      rebuildTrayMenu()
       settingsWindow.close()
     }
   }

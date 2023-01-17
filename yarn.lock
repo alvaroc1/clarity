@@ -1592,9 +1592,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@rollup/plugin-typescript@npm:10.0.1":
-  version: 10.0.1
-  resolution: "@rollup/plugin-typescript@npm:10.0.1"
+"@rollup/plugin-typescript@npm:11.0.0":
+  version: 11.0.0
+  resolution: "@rollup/plugin-typescript@npm:11.0.0"
   dependencies:
     "@rollup/pluginutils": ^5.0.1
     resolve: ^1.22.1
@@ -1607,7 +1607,7 @@ __metadata:
       optional: true
     tslib:
       optional: true
-  checksum: d3e85674b5ff56c4376bbd79fd2baced3e988b7110d60b1f818eb344721f5605eaa3b56a1668631d210399db7188a7cc4790bb423ad9e56144d015fd1591ccc3
+  checksum: b0d34ff0ad6bfc681c437ef42df7b02f04c361465be5a2044cd30cac5b003045c54e4377d58ab91925e296076b792bbb5ddded72cacdd21092bc8694a95b046f
   languageName: node
   linkType: hard
 
@@ -2723,11 +2723,11 @@ __metadata:
     "@rollup/plugin-commonjs": 24.0.0
     "@rollup/plugin-node-resolve": 13.3.0
     "@rollup/plugin-replace": 4.0.0
-    "@rollup/plugin-typescript": 10.0.1
+    "@rollup/plugin-typescript": 11.0.0
     "@types/jest": ^28.1.6
     "@types/react": 18.0.14
     "@types/react-dom": 18.0.5
-    electron: 22.0.0
+    electron: 22.0.2
     electron-store: ^8.1.0
     jest: ^28.1.3
     jss: 10.9.0
@@ -3484,16 +3484,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"electron@npm:22.0.0":
-  version: 22.0.0
-  resolution: "electron@npm:22.0.0"
+"electron@npm:22.0.2":
+  version: 22.0.2
+  resolution: "electron@npm:22.0.2"
   dependencies:
     "@electron/get": ^2.0.0
     "@types/node": ^16.11.26
     extract-zip: ^2.0.1
   bin:
     electron: cli.js
-  checksum: bbd3aef19e91568e9def792349152bdab59aa6d79dee17a8e662a9fb0b29626297f4e767df998937af7def803f34688dd94b4b37891aaf6b5bf86d2759629d9c
+  checksum: fe45a9ef985fe7f9ce47f3ed010d5fceafa68a58f236b5a32834d011ee70cf64f645ba21eb120f9063bd46d054b2b10179e330aea26e0de0dcb92417bfcd6bdf
   languageName: node
   linkType: hard
 

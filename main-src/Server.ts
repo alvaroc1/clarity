@@ -1,102 +1,82 @@
 
 import * as net from 'net'
+import { MVar } from '../util/MVar'
 
-enum Status {
-  starting,
-  running,
-  stopping,
-  stopped,
-}
+export namespace Server {
 
-type ServerImplementation = (setup: {
-  start: () => void,
-  dispose: () => void,
-  write: (s: string) => void,
-}) => (buf: Buffer) => void
+  export function create (port: number, handler: (data: AsyncIterable<Buffer>, write: (data: string) => void) => void): Promise<Server> {
+    const dataMVar = MVar.empty<Buffer>()
+    const openSockets: net.Socket[] = []
 
-/**
- * A socket server
- */
-export class Server {
-  #underlying: net.Server
-  status: Status = Status.stopped
+    const netServer = net.createServer({ pauseOnConnect: true}, async socket => {
+      socket.on('data', (data) => {
+        void dataMVar.put(data)
+      })
 
-  #openSockets: net.Socket[] = []
+      handler({
+        [Symbol.asyncIterator](): AsyncIterator<Buffer> {
+          return {
+            async next () {
+              const value = await dataMVar.take()
+              return {done: false, value}
+            },
+            /*
+            async return () {
+              netServer.close();
+              return {done: true, value: undefined}
+            }
+            */
+          }
+        }
+      }, (data) => socket.write(data))
 
-  private constructor(server: net.Server) {
-    this.#underlying = server
-    this.#underlying.on('error', (error) => {
+      socket.resume();
+    });
+
+    netServer.on('error', (error) => {
       console.error(`Server - error: ${error}`)
     })
-    this.#underlying.on('close', () => {
+    netServer.on('close', () => {
       console.log(`Server - close`)
     })
-    this.#underlying.on('listening', () => {
+    netServer.on('listening', () => {
       console.log(`Server - listening`)
     })
-    this.#underlying.on('connection', (socket) => {
-      this.#openSockets.push(socket)
+    netServer.on('connection', (socket) => {
+      openSockets.push(socket)
       socket.on('close', () => {
-        const idx = this.#openSockets.indexOf(socket)
-        this.#openSockets.splice(idx, 1)
-      })
-    })
-  }
-
-  async listen(port: number): Promise<void> {
-    this.status = Status.starting
-    return new Promise((resolve, reject) => {
-      this.#underlying.once('error', (error) => {
-        this.status = Status.stopped
-        reject(error)
-      })
-      this.#underlying.listen(port, "localhost", () => {
-        this.status = Status.running
-        resolve()
-      })
-    })
-  }
-
-  async close(): Promise<void> {
-    this.status = Status.stopping
-    return new Promise((resolve, reject) => {
-      this.#underlying.once('error', (error) => {
-        this.status = Status.stopped
-        reject(error)
-      })
-      // destroy any open sockets
-      this.#openSockets.forEach((socket) => {
-        socket.destroy()
-      })
-      this.#underlying.close((result) => {
-        if (result === undefined) {
-          this.status = Status.stopped
-          resolve()
-        }
-        else reject(result)
-      })
-    })
-  }
-
-  static create(setup: ServerImplementation): Server {
-    const netServer = net.createServer({ pauseOnConnect: true }, socket => {
-      const handler = setup({
-        start: () => socket.resume(),
-        dispose: () => socket.destroy(),
-        write: (s: string) => socket.write(s),
-      })
-
-      socket.on('data', data => {
-        handler(data)
-
-        try {
-          //if (!socketClosed) socket.write("mouse,0,0,0")
-        } catch (ex) {
-          console.log(ex)
-        }
+        const idx = openSockets.indexOf(socket)
+        openSockets.splice(idx, 1)
       })
     })
 
-    return new Server(netServer)
+    return new Promise(resolve => {
+      void netServer.listen(port, () => {
+        resolve({
+          close (): Promise<void> {
+            // destroy any open sockets
+            openSockets.forEach((socket) => {
+              socket.destroy()
+            })
+            
+            return new Promise((resolve, reject) => {
+              netServer.once('error', (error) => {
+                reject(error)
+              })
+              netServer.close((result) => {
+                if (result === undefined) {
+                  resolve()
+                }
+                else reject(result)
+              })
+            })
+          },
+        })
+      })
+    })
   }
+}
+
+type Server = {
+  close (): Promise<void>
 }

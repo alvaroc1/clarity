@@ -1,12 +1,11 @@
-import { app, BrowserWindow, ipcMain, Menu, Tray } from 'electron'
+import { app } from 'electron'
 import path from 'path'
-import * as net from 'net'
-import { Session } from './Session'
-import { ServerInstruction } from '../guacamole/ServerInstruction'
-import { Parser } from '../protocol/Parser'
-import { Server } from './Server'
 import { SettingsWindow } from '../shared/SettingsWindow'
 import { Clarity } from './Clarity'
+// import * as electronSquirrelStartup from 'electron-squirrel-startup';
+
+// windows installer wrapper
+// if (electronSquirrelStartup) app.quit();
 
 app.on('ready', async () => {
   const quitServer = await Clarity.run()
@@ -105,27 +104,11 @@ app.on('ready', async event => {
       console.log(`got error on socket, prob unexpected disconnect (?): ${error.message}`)
     })
 
-    socket.on('disconnect', _ => {
-      console.log("DISCONNECT")
-    })
-
-    ipcMain.on('event', (_, data) => {
-      const encoded = encodeCommand(data)
-      socket.write(encoded + ";")
-    })
-  })
-  server.listen(9002)
-  server.on('listening', (_: net.Socket) => console.log('listening'))
-  server.on('error', (_: net.Socket) => console.log('error'))
-  server.on('close', (_: net.Socket) => {
-    console.log('server close')
-  })
-  server.on('clientError', _ => {
-    console.log('client error')
   })
 
 });
 
+/*
 // prevent app from quiting
 app.on('window-all-closed', () => {
   app.dock.hide()
