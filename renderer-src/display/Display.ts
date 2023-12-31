@@ -1,9 +1,10 @@
+/* eslint-disable no-case-declarations */
 import { Layer } from './Layer'
 import { ServerInstruction } from '../../guacamole/ServerInstruction'
 import { MouseButton } from '../../drawing/MouseButton'
 import jss from 'jss'
 import { ChannelMask } from '../../drawing/ChannelMask'
-const { ipcRenderer } = require('electron')
+// const { ipcRenderer } = require('electron')
 
 const classes = jss.createStyleSheet({
   display: {
@@ -51,7 +52,7 @@ export class Display {
         y: ev.clientY,
         buttons: this.#mouseButtonsPressed,
       })
-    });
+    })
     element.addEventListener('mousedown', ev => {
       this.#mouseButtonsPressed = this.#numberToButtonSet(ev.buttons)
       console.log(this.#mouseButtonsPressed)
@@ -60,7 +61,7 @@ export class Display {
         y: ev.clientY,
         buttons: this.#mouseButtonsPressed,
       })
-    });
+    })
     element.addEventListener('mouseup', ev => {
       this.#mouseButtonsPressed = this.#numberToButtonSet(ev.buttons)
       this.#onMouse({
@@ -68,7 +69,7 @@ export class Display {
         y: ev.clientY,
         buttons: this.#mouseButtonsPressed,
       })
-    });
+    })
   }
 
   #numberToButtonSet = (n: number): Set<MouseButton> => {
@@ -88,7 +89,7 @@ export class Display {
   }
 
   #createLayer = (idx: number): Layer => {
-    console.log("Display: LAYER CREATE")
+    console.log('Display: LAYER CREATE')
     const layer = Layer.create(`layer-${idx}`, 200, 200)
     this.#layers[idx] = layer
 
@@ -100,7 +101,7 @@ export class Display {
   }
 
   mount = (node: Element): void => {
-    console.log("Display: MOUNT")
+    console.log('Display: MOUNT')
     node.appendChild(this.#element)
     this.#defaultLayer.mount(this.#element)
   }
@@ -109,7 +110,7 @@ export class Display {
     window.requestAnimationFrame(() => {
       this.#tasks.forEach(t => t())
       this.#tasks = []
-      callback();
+      callback()
     })
   }
 
@@ -121,10 +122,11 @@ export class Display {
           if (layer == 0) {
             const width = c[2]
             const height = c[3]
-            ipcRenderer.send('resize', width, height)
+            // ipcRenderer.send('resize', width, height)
+            // clarity.resize(width, height)
           }
-          this.#execLayerCommand(c);
-          break;
+          this.#execLayerCommand(c)
+          break
 
         case 'copy':
           const srcLayer = this.#getLayer(c[1])
@@ -157,7 +159,7 @@ export class Display {
           )
 
           dstLayer.context.globalCompositeOperation = savedCompositeOperation
-          break;
+          break
 
         case 'rect':
         case 'arc':
@@ -170,13 +172,13 @@ export class Display {
         case 'push':
         case 'pop':
         case 'curve':
-          this.#execLayerCommand(c);
-          break;
+          this.#execLayerCommand(c)
+          break
 
         case 'cfill':
         case 'cstroke':
-          this.#execLayerPathCompleteCommand(c);
-          break;
+          this.#execLayerPathCompleteCommand(c)
+          break
 
         case 'sync':
         case 'select':
@@ -191,18 +193,18 @@ export class Display {
   #execLayerCommand = (c: ServerInstruction.LayerCommand): void => {
     const layer = this.#getLayer(c[1])
     switch (c[0]) {
-      case 'rect': layer.rect(c[2], c[3], c[4], c[5]); break;
-      case 'arc': layer.arc(c[2], c[3], c[4], c[5], c[6], c[7]); break;
-      case 'size': layer.resize(c[2], c[3]); break;
-      case 'start': layer.start(c[2], c[3]); break;
-      case 'line': layer.line(c[2], c[3]); break;
-      case 'curve': layer.curve(c[2], c[3], c[4], c[5], c[6], c[7]); break;
-      case 'move': layer.move(c[2], c[3]); break;
-      case 'close': layer.close(); break;
-      case 'identity': layer.identity(); break;
-      case 'transform': layer.transform(c[2], c[3], c[4], c[5], c[6], c[7]); break;
-      case 'push': layer.push(); break;
-      case 'pop': layer.pop(); break;
+      case 'rect': layer.rect(c[2], c[3], c[4], c[5]); break
+      case 'arc': layer.arc(c[2], c[3], c[4], c[5], c[6], c[7]); break
+      case 'size': layer.resize(c[2], c[3]); break
+      case 'start': layer.start(c[2], c[3]); break
+      case 'line': layer.line(c[2], c[3]); break
+      case 'curve': layer.curve(c[2], c[3], c[4], c[5], c[6], c[7]); break
+      case 'move': layer.move(c[2], c[3]); break
+      case 'close': layer.close(); break
+      case 'identity': layer.identity(); break
+      case 'transform': layer.transform(c[2], c[3], c[4], c[5], c[6], c[7]); break
+      case 'push': layer.push(); break
+      case 'pop': layer.pop(); break
       default:
         assertUnreachable(c)
     }
@@ -212,8 +214,8 @@ export class Display {
     const layer = this.#getLayer(c[2])
     layer.setChannelMask(c[1])
     switch (c[0]) {
-      case 'cstroke': layer.cstroke(c[3], c[4], c[5], c[6][0], c[6][1], c[6][2], c[6][3]); break;
-      case 'cfill': layer.cfill(c[3][0], c[3][1], c[3][2], c[3][3]); break;
+      case 'cstroke': layer.cstroke(c[3], c[4], c[5], c[6][0], c[6][1], c[6][2], c[6][3]); break
+      case 'cfill': layer.cfill(c[3][0], c[3][1], c[3][2], c[3][3]); break
       default: assertUnreachable(c)
     }
   }

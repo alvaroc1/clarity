@@ -12,7 +12,6 @@
       "experimentalDecorators": true,
       "removeComments": true,
       "noImplicitAny": true,
-      "suppressImplicitAnyIndexErrors": true,
       "forceConsistentCasingInFileNames": true,
       "importHelpers": true,
       "strict": true,

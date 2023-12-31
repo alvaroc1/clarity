@@ -1,0 +1,22 @@
+{
+  "compilerOptions": {
+     "lib": [
+        "dom"
+     ],
+     "module": "esnext",
+     "target": "es2022",
+     "strict": true,
+     "allowJs": false,
+     "esModuleInterop": true,
+     "skipLibCheck": true,
+     "forceConsistentCasingInFileNames": true,
+     "moduleResolution": "node"
+  },
+  "exclude": [
+     "node_modules"
+  ],
+  "include": [
+    "preload-src/**/*.ts",
+    "shared-src/**/*.ts"
+  ]
+}

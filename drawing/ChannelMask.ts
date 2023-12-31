@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-namespace */
 export namespace ChannelMask {
   export const ROUT = 0x2
   export const ATOP = 0x6
@@ -12,17 +13,17 @@ export namespace ChannelMask {
   export const SRC = 0xC
 
   const htmlCompositeOps: Record<ChannelMask, GlobalCompositeOperation> = {
-    [RIN]: "destination-in",
-    [ROUT]: "destination-out",
-    [IN]: "source-in",
-    [ATOP]: "source-atop",
-    [OUT]: "source-out",
-    [RATOP]: "destination-atop",
-    [XOR]: "xor",
-    [ROVER]: "destination-over",
-    [SRC]: "copy",
-    [OVER]: "source-over",
-    [PLUS]: "lighter"
+    [RIN]: 'destination-in',
+    [ROUT]: 'destination-out',
+    [IN]: 'source-in',
+    [ATOP]: 'source-atop',
+    [OUT]: 'source-out',
+    [RATOP]: 'destination-atop',
+    [XOR]: 'xor',
+    [ROVER]: 'destination-over',
+    [SRC]: 'copy',
+    [OVER]: 'source-over',
+    [PLUS]: 'lighter'
   }
 
   export const toHtmlCanvasCompositeOperation = (mask: ChannelMask): GlobalCompositeOperation => htmlCompositeOps[mask]

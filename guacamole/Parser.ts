@@ -18,16 +18,16 @@ export class Parser {
 
   static async *parse(buffers: AsyncIterable<Buffer>): AsyncIterable<string[]> {
     let args: string[] = []
-    let size: number = 0
+    let size = 0
     let sizeChars: number[] = []
-    let data: string = ''
+    let data = ''
     let state: State = State.size
 
     for await (const buffer of buffers) {
       let offset = 0
       while (buffer.length > offset) {
         switch (state) {
-          case State.size:
+          case State.size: {
             const char = buffer.readUInt8(offset++)
             if (char === dot) {
               size = parseInt(String.fromCodePoint(...sizeChars), 10)
@@ -37,8 +37,9 @@ export class Parser {
               sizeChars.push(char)
             }
             break
+          }
 
-          case State.data:
+          case State.data: {
             const biteSize = Math.min(buffer.length, size)
             data += buffer.toString(undefined, offset, offset + biteSize)
             size -= biteSize
@@ -52,13 +53,14 @@ export class Parser {
                   data = ''
                   break
                 // we have a complete command
-                case semi:
+                case semi: {
                   args.push(data)
                   data = ''
                   const instruction = [...args]
                   args = []
                   yield instruction
                   break
+                }
                 default: throw `Unexpected: ${buffer.readUInt8(offset - 1)}`
               }
 
@@ -66,6 +68,7 @@ export class Parser {
               state = State.size
             }
             break
+          }
         }
       }
     }

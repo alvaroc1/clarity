@@ -9,27 +9,26 @@ type MVarLock = {
   release(): Promise<void>
 }
 
-export namespace MVar {
-  export function empty <A>(): MVar<A> {
+export const MVar = {
+  create <A>(value: A): MVar<A> {
+    return createInternal(value)
+  },
+
+  empty <A>(): MVar<A> {
     return createInternal<A>(undefined)
   }
-
-  export function create <A>(value: A): MVar<A> {
-    return createInternal(value)
-  }
+}
 
 
-  /** Creates a lock powered by am MVar  */
-  export function createLock (): MVarLock {
-    const mvar = MVar.create<void>(undefined)
+export function createMVarLock(): MVarLock {
+  const mvar = MVar.create<void>(undefined)
   
-    return {
-      async aquire () {
-        return mvar.take()
-      },
-      async release () {
-        return mvar.put(undefined)
-      }
+  return {
+    async aquire () {
+      return mvar.take()
+    },
+    async release () {
+      return mvar.put(undefined)
     }
   }
 }
@@ -39,14 +38,14 @@ function createInternal <A>(value: A | undefined) {
   const providers: Array<() => A> = []
 
   if (value !== undefined) {
-    providers.push(() => value);
+    providers.push(() => value)
   }
 
   return {
     async take (): Promise<A> {
-      const provider = providers.shift();
+      const provider = providers.shift()
       if (provider) {
-        return provider();
+        return provider()
       } else {
         return await new Promise<A>(resolve => consumers.push(resolve))
       }

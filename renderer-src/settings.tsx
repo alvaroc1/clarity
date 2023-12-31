@@ -1,13 +1,11 @@
 import * as React from 'react'
-import { DialogActions, ListItemIcon, ListItemText, ListSubheader, Typography } from '@mui/material'
-import { Cable } from '@mui/icons-material'
 import Button from '@mui/joy/Button'
 import Box from '@mui/joy/Box'
 import List from '@mui/joy/List'
 import ListItem from '@mui/joy/ListItem'
 import ListItemContent from '@mui/joy/ListItemContent'
 import TextField from '@mui/joy/TextField'
-import { SettingsProps, SettingsEvent } from '../shared/SettingsWindow'
+import { SettingsProps, SettingsEvent } from '../shared-src/SettingsWindow'
 import { ManagedWindowComponent } from './ManagedWindowComponent'
 
 class SettingsPage extends ManagedWindowComponent<SettingsProps, SettingsEvent, { port: number }> {
@@ -48,33 +46,12 @@ class SettingsPage extends ManagedWindowComponent<SettingsProps, SettingsEvent, 
           }}>Apply</Button>
       </Box>
     </Box>
-
-    /*
-    return (
-      <List
-        sx={{
-          width: '100%',
-        }}>
-        <ListItem>
-          <ListItemIcon>
-            <Cable />
-          </ListItemIcon>
-          <ListItemText>TCP Port</ListItemText>
-          <TextField defaultValue={port} size='small'
-            inputProps={{ inputMode: 'numeric', pattern: '[0-9]*' }}
-            error={error != undefined}
-            helperText={error}
-            sx={{ width: 80 }}
-            onChange={ev => onEvent({ port: parseInt(ev.target.value, 10) })} />
-        </ListItem>
-      </List>
-    )
-    */
   }
 }
 
 ManagedWindowComponent.attach<SettingsProps, SettingsEvent>(
-  "settings",
-  document.querySelector("#app")!,
+  'settings',
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+  document.querySelector('#app')!,
   SettingsPage
 )

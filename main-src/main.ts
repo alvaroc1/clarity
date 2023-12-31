@@ -1,14 +1,17 @@
 import { app } from 'electron'
-import path from 'path'
-import { SettingsWindow } from '../shared/SettingsWindow'
-import { Clarity } from './Clarity'
+import { runClarityApp } from './runClarityApp'
 // import * as electronSquirrelStartup from 'electron-squirrel-startup';
 
 // windows installer wrapper
 // if (electronSquirrelStartup) app.quit();
 
+import log from 'electron-log/main'
+
+// required so logging is available in renderer process
+log.initialize()
+
 app.on('ready', async () => {
-  const quitServer = await Clarity.run()
+  const quitServer = await runClarityApp()
 
   app.on('before-quit', async () => {
     await quitServer()

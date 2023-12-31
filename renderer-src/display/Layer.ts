@@ -1,4 +1,4 @@
-import { Cap } from "../../drawing/Cap"
+import { Cap } from '../../drawing/Cap'
 import { Join } from '../../drawing/Join'
 import { ChannelMask } from '../../drawing/ChannelMask'
 import jss from 'jss'
@@ -18,20 +18,20 @@ export class Layer {
   #canvas: HTMLCanvasElement
   #ctx: CanvasRenderingContext2D
   #container: HTMLDivElement
-  #pathClosed: boolean = true
+  #pathClosed = true
   #children: Layer[] = []
-  #transformStack: number = 0
+  #transformStack = 0
 
   get container() {
     return this.#container
   }
 
   get context() {
-    return this.#ctx;
+    return this.#ctx
   }
 
   get canvas() {
-    return this.#canvas;
+    return this.#canvas
   }
 
   private constructor(label: string, width: number, height: number) {
@@ -47,6 +47,7 @@ export class Layer {
 
     container.appendChild(canvas)
 
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion, @typescript-eslint/no-extra-non-null-assertion
     const ctx = canvas.getContext('2d')!!
 
     // scale to match pixel ratio
@@ -55,8 +56,6 @@ export class Layer {
     this.#canvas = canvas
     this.#ctx = ctx
     this.#container = container
-
-    //Layer.drawGrid(ctx, width, height)
   }
 
   setChannelMask = (mask: ChannelMask): void => {
@@ -96,13 +95,13 @@ export class Layer {
 
   cstroke = (cap: Cap, join: Join, thickness: number, r: number, g: number, b: number, a: number): void => {
     this.#ctx.lineWidth = thickness
-    this.#ctx.strokeStyle = "rgba(" + r + "," + g + "," + b + "," + a / 255.0 + ")"
+    this.#ctx.strokeStyle = 'rgba(' + r + ',' + g + ',' + b + ',' + a / 255.0 + ')'
     this.#ctx.stroke()
     this.#pathClosed = true
   }
 
   cfill = (r: number, g: number, b: number, a: number): void => {
-    this.#ctx.fillStyle = "rgba(" + r + "," + g + "," + b + "," + a / 255.0 + ")"
+    this.#ctx.fillStyle = 'rgba(' + r + ',' + g + ',' + b + ',' + a / 255.0 + ')'
     this.#ctx.fill()
     this.#pathClosed = true
   }
@@ -121,6 +120,7 @@ export class Layer {
       document.body.appendChild(tmp)
       tmp.width = this.#canvas.width
       tmp.height = this.#canvas.height
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion, @typescript-eslint/no-extra-non-null-assertion
       const tmpCtx = tmp.getContext('2d')!!
       tmpCtx.drawImage(this.#canvas, 0, 0, this.#canvas.width, this.#canvas.height, 0, 0, this.#canvas.width, this.#canvas.height)
 
@@ -181,22 +181,4 @@ export class Layer {
   }
 
   static create = (label: string, width: number, height: number): Layer => new Layer(label, width, height)
-
-  static drawGrid = (ctx: CanvasRenderingContext2D, width: number, height: number) => {
-    const oldLineDash = ctx.getLineDash()
-    ctx.beginPath()
-    ctx.setLineDash([1])
-    for (let x = 0; x <= width; x += 25) {
-      ctx.moveTo(x, 0)
-      ctx.lineTo(x, height)
-    }
-    for (let y = 0; y <= height; y += 25) {
-      ctx.moveTo(0, y)
-      ctx.lineTo(width, y)
-    }
-    ctx.strokeStyle = '#000000'
-    ctx.lineWidth = 1
-    ctx.stroke()
-    ctx.setLineDash(oldLineDash)
-  }
 }

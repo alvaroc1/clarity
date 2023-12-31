@@ -1,5 +1,5 @@
 import * as React from 'react'
-import Renderer from 'electron/renderer'
+// import Renderer from 'electron/renderer'
 import * as ReactDOM from 'react-dom/client'
 import { CssVarsProvider } from '@mui/joy/styles'
 
@@ -9,18 +9,21 @@ interface Extra<Ev> {
 }
 
 export class ManagedWindowComponent<P, S, Ev> extends React.Component<P & Extra<Ev>, S> {
-  static async attach<P extends {}, Ev>(id: string, element: Element, Component: React.ComponentType<P & Extra<Ev>>): Promise<void> {
+  static async attach<P extends object, Ev>(id: string, element: Element, Component: React.ComponentType<P & Extra<Ev>>): Promise<void> {
 
     const handleOnEvent = (ev: Ev) => {
-      Renderer.ipcRenderer.send(`window.${id}`, ev)
+      // Renderer.ipcRenderer.send(`window.${id}`, ev)
+      clarity.emitEvent(id, ev)
     }
     const handleClose = () => {
-      Renderer.ipcRenderer.send(`window.${id}.close`, undefined)
+      // Renderer.ipcRenderer.send(`window.${id}.close`, undefined)
+      clarity.closeWindow(id)
     }
 
     let lastProps = {}
 
-    Renderer.ipcRenderer.on('update', (_, props: P) => {
+    // Renderer.ipcRenderer.on('update', (_, props: P) => {
+    clarity.onUpdate((props: P) => {
       const newProps = { ...lastProps, ...props }
       lastProps = newProps
       ReactDOM.createRoot(element).render(
