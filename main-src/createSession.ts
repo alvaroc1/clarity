@@ -1,6 +1,6 @@
 import { BrowserWindow, ipcMain } from 'electron'
 import { ClientInstruction } from '../guacamole/ClientInstruction'
-import { ServerInstruction } from '../guacamole/ServerInstruction'
+import { DisplayCmd, ServerInstruction } from '../guacamole/ServerInstruction'
 import { MVar } from '../util/MVar'
 import path from 'path'
 import logger from 'electron-log/main'
@@ -66,7 +66,20 @@ export function createSession ({
       if (commands[0][0] === 'sync') {
         log.info('commands', 'sync')
       }
-      await incomingChannel.enqueue(commands)
+
+      const displayCommands: DisplayCmd[] = []
+      for (const command of commands) {
+        // if resizing layer 0, we have to resize the window
+        if (command[0] === 'size' && command[1] === 0) {
+          win.setContentSize(command[2], command[3], false)
+        }
+
+        switch (command[0]) {
+          case 'select': break
+          default: displayCommands.push(command)
+        }
+      }
+      await incomingChannel.enqueue(displayCommands)
     }
   }
 }
@@ -105,11 +118,6 @@ function createBrowserWindow <SendData>({
     show: false,
   })
 
-  ipcMain.on('resize', (_event: unknown, width: number, height: number) => {
-    if (!win.isDestroyed()) {
-      win.setContentSize(width, height, false)
-    }
-  })
   ipcMain.on('event', (_, data) => {
     onSend(data)
   })

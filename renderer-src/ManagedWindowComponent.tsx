@@ -12,11 +12,9 @@ export class ManagedWindowComponent<P, S, Ev> extends React.Component<P & Extra<
   static async attach<P extends object, Ev>(id: string, element: Element, Component: React.ComponentType<P & Extra<Ev>>): Promise<void> {
 
     const handleOnEvent = (ev: Ev) => {
-      // Renderer.ipcRenderer.send(`window.${id}`, ev)
       clarity.emitEvent(id, ev)
     }
     const handleClose = () => {
-      // Renderer.ipcRenderer.send(`window.${id}.close`, undefined)
       clarity.closeWindow(id)
     }
 

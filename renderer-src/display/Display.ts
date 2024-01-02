@@ -1,10 +1,9 @@
 /* eslint-disable no-case-declarations */
 import { Layer } from './Layer'
-import { ServerInstruction } from '../../guacamole/ServerInstruction'
+import { RenderCommand } from '../../guacamole/ServerInstruction'
 import { MouseButton } from '../../drawing/MouseButton'
 import jss from 'jss'
 import { ChannelMask } from '../../drawing/ChannelMask'
-// const { ipcRenderer } = require('electron')
 
 const classes = jss.createStyleSheet({
   display: {
@@ -34,7 +33,7 @@ export class Display {
   #onMouse: (ev: MouseEv) => void
 
   constructor(onMouse: (ev: MouseEv) => void) {
-    const defaultLayer = Layer.create('layer-default', 200, 200)
+    const defaultLayer = Layer.create(200, 200)
     const element = document.createElement('div')
     element.className = classes.display
 
@@ -89,8 +88,7 @@ export class Display {
   }
 
   #createLayer = (idx: number): Layer => {
-    console.log('Display: LAYER CREATE')
-    const layer = Layer.create(`layer-${idx}`, 200, 200)
+    const layer = Layer.create(200, 200)
     this.#layers[idx] = layer
 
     // only mount if >= 0
@@ -101,33 +99,24 @@ export class Display {
   }
 
   mount = (node: Element): void => {
-    console.log('Display: MOUNT')
     node.appendChild(this.#element)
     this.#defaultLayer.mount(this.#element)
   }
 
   flush = (callback: () => void) => {
     window.requestAnimationFrame(() => {
-      this.#tasks.forEach(t => t())
-      this.#tasks = []
+      let task = this.#tasks.shift()
+      while (task !== undefined) {
+        task()
+        task = this.#tasks.shift()
+      }
       callback()
     })
   }
 
-  exec = (c: ServerInstruction): void => {
+  exec = (c: RenderCommand): void => {
     this.#tasks.push(() => {
       switch (c[0]) {
-        case 'size':
-          const layer = c[1]
-          if (layer == 0) {
-            const width = c[2]
-            const height = c[3]
-            // ipcRenderer.send('resize', width, height)
-            // clarity.resize(width, height)
-          }
-          this.#execLayerCommand(c)
-          break
-
         case 'copy':
           const srcLayer = this.#getLayer(c[1])
           const [sx, sy, sw, sh, cm] = [c[2], c[3], c[4], c[5], c[6]]
@@ -161,63 +150,57 @@ export class Display {
           dstLayer.context.globalCompositeOperation = savedCompositeOperation
           break
 
-        case 'rect':
+        case 'size': 
+          this.#getLayer(c[1]).resize(c[2], c[3])
+          break
+        case 'rect': 
+          this.#getLayer(c[1]).rect(c[2], c[3], c[4], c[5])
+          break
         case 'arc':
+          this.#getLayer(c[1]).arc(c[2], c[3], c[4], c[5], c[6], c[7])
+          break
         case 'start':
+          this.#getLayer(c[1]).start(c[2], c[3])
+          break
         case 'line':
+          this.#getLayer(c[1]).line(c[2], c[3]) 
+          break
         case 'move':
+          this.#getLayer(c[1]).move(c[2], c[3])
+          break
         case 'close':
+          this.#getLayer(c[1]).close(); break
         case 'transform':
+          this.#getLayer(c[1]).transform(c[2], c[3], c[4], c[5], c[6], c[7])
+          break
         case 'identity':
+          this.#getLayer(c[1]).identity()
+          break
         case 'push':
+          this.#getLayer(c[1]).push()
+          break
         case 'pop':
+          this.#getLayer(c[1]).pop()
+          break
         case 'curve':
-          this.#execLayerCommand(c)
+          this.#getLayer(c[1]).curve(c[2], c[3], c[4], c[5], c[6], c[7])
           break
-
-        case 'cfill':
-        case 'cstroke':
-          this.#execLayerPathCompleteCommand(c)
+        case 'cfill': {
+          const layer = this.#getLayer(c[2])
+          layer.setChannelMask(c[1])
+          layer.cfill(c[3][0], c[3][1], c[3][2], c[3][3]); break
+        }
+        case 'cstroke': {
+          const layer = this.#getLayer(c[2])
+          layer.setChannelMask(c[1])
+          layer.cstroke(c[3], c[4], c[5], c[6][0], c[6][1], c[6][2], c[6][3])
           break
-
-        case 'sync':
-        case 'select':
-          throw `There should not be control commands here, got: ${c[0]}`
+        }
 
         default:
           assertUnreachable(c)
       }
     })
-  }
-
-  #execLayerCommand = (c: ServerInstruction.LayerCommand): void => {
-    const layer = this.#getLayer(c[1])
-    switch (c[0]) {
-      case 'rect': layer.rect(c[2], c[3], c[4], c[5]); break
-      case 'arc': layer.arc(c[2], c[3], c[4], c[5], c[6], c[7]); break
-      case 'size': layer.resize(c[2], c[3]); break
-      case 'start': layer.start(c[2], c[3]); break
-      case 'line': layer.line(c[2], c[3]); break
-      case 'curve': layer.curve(c[2], c[3], c[4], c[5], c[6], c[7]); break
-      case 'move': layer.move(c[2], c[3]); break
-      case 'close': layer.close(); break
-      case 'identity': layer.identity(); break
-      case 'transform': layer.transform(c[2], c[3], c[4], c[5], c[6], c[7]); break
-      case 'push': layer.push(); break
-      case 'pop': layer.pop(); break
-      default:
-        assertUnreachable(c)
-    }
-  }
-
-  #execLayerPathCompleteCommand = (c: ServerInstruction.LayerPathCompleteCommand): void => {
-    const layer = this.#getLayer(c[2])
-    layer.setChannelMask(c[1])
-    switch (c[0]) {
-      case 'cstroke': layer.cstroke(c[3], c[4], c[5], c[6][0], c[6][1], c[6][2], c[6][3]); break
-      case 'cfill': layer.cfill(c[3][0], c[3][1], c[3][2], c[3][3]); break
-      default: assertUnreachable(c)
-    }
   }
 }
 

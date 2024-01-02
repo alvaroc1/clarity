@@ -34,7 +34,7 @@ export class Layer {
     return this.#canvas
   }
 
-  private constructor(label: string, width: number, height: number) {
+  private constructor(width: number, height: number) {
     const canvas = document.createElement('canvas')
     canvas.width = width * window.devicePixelRatio
     canvas.height = height * window.devicePixelRatio
@@ -180,5 +180,5 @@ export class Layer {
     element.appendChild(this.#container)
   }
 
-  static create = (label: string, width: number, height: number): Layer => new Layer(label, width, height)
+  static create = (width: number, height: number): Layer => new Layer(width, height)
 }

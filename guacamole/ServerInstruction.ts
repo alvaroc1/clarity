@@ -1,74 +1,51 @@
-import { ChannelMask } from "../drawing/ChannelMask"
-import { Cap } from "../drawing/Cap"
-import { Join } from "../drawing/Join"
-import { Rgba } from "../drawing/Rgba"
+import { ChannelMask } from '../drawing/ChannelMask'
+import { Cap } from '../drawing/Cap'
+import { Join } from '../drawing/Join'
+import { Rgba } from '../drawing/Rgba'
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type Cmd<Opcode extends string, X extends any[]> = [opcode: Opcode, ...X]
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type LayerCmd<Opcode extends string, X extends any[]> = Cmd<Opcode, [layer: number, ...X]>
+
+type Select = Cmd<'select', [protocol: string]>
+type Sync = Cmd<'sync', [number]>
+type Copy = Cmd<'copy', [srclayer: number, sx: number, sy: number, sw: number, sh: number, cm: ChannelMask, dstlayer: number, dx: number, dy: number]>
+type Arc = LayerCmd<'arc', [x: number, y: number, radius: number, start: number, end: number, negative: boolean]>
+type Rect = LayerCmd<'rect', [x: number, y: number, width: number, height: number]>
+type Size = LayerCmd<'size', [width: number, height: number]>
+type Move = LayerCmd<'move', [x: number, y: number]>
+type Start = LayerCmd<'start', [x: number, y: number]>
+type Close = LayerCmd<'close', []>
+type Push = LayerCmd<'push', []>
+type Pop = LayerCmd<'pop', []>
+type Identity = LayerCmd<'identity', []>
+type Transform = LayerCmd<'transform', [number, number, number, number, number, number]>
+type Line = LayerCmd<'line', [x: number, y: number]>
+type Curve = LayerCmd<'curve', [cp1x: number, cp1y: number, cp2x: number, cp2y: number, x: number, y: number]>
+type Cstroke = LayerPathCompleteCmd<'cstroke', [cap: Cap, join: Join, thickness: number, color: Rgba]>
+type Cfill = LayerPathCompleteCmd<'cfill', [color: Rgba]>
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type LayerPathCompleteCmd<Opcode extends string, X extends any[]> = Cmd<Opcode, [mask: ChannelMask, layer: number, ...X]>
+
+type CanvasCommand = Copy
+type LayerCommand = Arc | Rect | Start | Line | Size | Move | Close | Identity | Transform | Push | Pop | Curve
+type LayerPathCompleteCommand = Cstroke | Cfill
+
+export type ControlCommand = Select | Sync
+export type RenderCommand = CanvasCommand | LayerCommand | LayerPathCompleteCommand
+export type DisplayCmd = Sync | RenderCommand
+export type ServerInstruction = ControlCommand | DisplayCmd
 
 /** Guacamole command */
-export namespace ServerInstruction {
-  type LayerCmd<CommandName extends string, X extends any[]> = [CommandName, number, ...X]
-  type LayerPathCompleteCmd<CommandName extends string, X extends any[]> = [CommandName, ChannelMask, number, ...X]
-
-  export type Select = [_: 'select', protocol: string]
-  export const select = (protocol: string): Select =>
-    ['select', protocol]
-
-  export type Copy = [_: 'copy', srclayer: number, sx: number, sy: number, sw: number, sh: number, cm: ChannelMask, dstlayer: number, dx: number, dy: number]
-  export const copy = (srclayer: number, sx: number, sy: number, sw: number, sh: number, cm: ChannelMask, dstlayer: number, dx: number, dy: number): Copy =>
-    ['copy', srclayer, sx, sy, sw, sh, cm, dstlayer, dx, dy]
-
-  export type Arc = LayerCmd<'arc', [x: number, y: number, radius: number, start: number, end: number, negative: boolean]>
-  export const arc = (layer: number, x: number, y: number, radius: number, start: number, end: number, negative: boolean): Arc =>
-    ['arc', layer, x, y, radius, start, end, negative]
-
-  export type Rect = LayerCmd<'rect', [x: number, y: number, width: number, height: number]>
-  export const rect = (layer: number, x: number, y: number, width: number, height: number): Rect => ['rect', layer, x, y, width, height]
-
-  export type Size = LayerCmd<'size', [width: number, height: number]>
-  export const size = (layer: number, width: number, height: number): Size => ['size', layer, width, height]
-
-  export type Move = LayerCmd<'move', [x: number, y: number]>
-  export const move = (layer: number, x: number, y: number): Move => ['move', layer, x, y]
-
-  export type Start = LayerCmd<'start', [x: number, y: number]>
-  export const start = (layer: number, x: number, y: number): Start => ['start', layer, x, y]
-
-  export type Close = LayerCmd<'close', []>
-  export const close = (layer: number): Close => ['close', layer]
-
-  export type Push = LayerCmd<'push', []>
-  export const push = (layer: number): Push => ['push', layer]
-
-  export type Pop = LayerCmd<'pop', []>
-  export const pop = (layer: number): Pop => ['pop', layer]
-
-  export type Identity = LayerCmd<'identity', []>
-  export const identity = (layer: number): Identity => ['identity', layer]
-
-  export type Transform = LayerCmd<'transform', [number, number, number, number, number, number]>
-  export const transform = (layer: number, a: number, b: number, c: number, d: number, e: number, f: number): Transform =>
-    ['transform', layer, a, b, c, d, e, f]
-
-  export type Line = LayerCmd<'line', [x: number, y: number]>
-  export const line = (layer: number, x: number, y: number): Line => ['line', layer, x, y]
-
-  export type Curve = LayerCmd<'curve', [cp1x: number, cp1y: number, cp2x: number, cp2y: number, x: number, y: number]>
-  export const curve = (layer: number, cp1x: number, cp1y: number, cp2x: number, cp2y: number, x: number, y: number): Curve => ['curve', layer, cp1x, cp1y, cp2x, cp2y, x, y]
-
-  export type Cstroke = LayerPathCompleteCmd<'cstroke', [cap: Cap, join: Join, thickness: number, color: Rgba]>
-  export const cstroke = (layer: number, mask: ChannelMask, cap: Cap, join: Join, thickness: number, color: Rgba): Cstroke =>
-    ['cstroke', mask, layer, cap, join, thickness, color]
-
-  export type Cfill = LayerPathCompleteCmd<'cfill', [color: Rgba]>
-  export const cfill = (layer: number, mask: ChannelMask, color: Rgba): Cfill => ['cfill', mask, layer, color]
-
-  export type Sync = ['sync', number]
-  export const sync = (t: number): Sync => ['sync', t]
-
-  export const fromStringArray = (params: string[]): ServerInstruction => {
+export const ServerInstruction = {
+  fromStringArray (params: string[]): ServerInstruction {
     const [opcode, ...p] = params
     switch (opcode) {
       case 'copy':
-        return copy(
+        return [
+          'copy',
           parseInt(p[0], 10), // srclayer
           parseFloat(p[1]),   // sx
           parseFloat(p[2]),   // sy
@@ -78,9 +55,10 @@ export namespace ServerInstruction {
           parseInt(p[6], 10), // dstlayer
           parseFloat(p[7]),   // dx
           parseFloat(p[8]),    // dy
-        )
+        ]
       case 'arc':
-        return arc(
+        return [
+          'arc',
           parseInt(p[0], 10), // layer
           parseFloat(p[1]),   // x
           parseFloat(p[2]),   // y
@@ -88,51 +66,61 @@ export namespace ServerInstruction {
           parseFloat(p[4]),   // start
           parseFloat(p[5]),   // end
           parseInt(p[6], 10) == 1, // negative
-        )
+        ]
       case 'rect':
-        return rect(
+        return [
+          'rect',
           parseInt(p[0], 10), // layer
           parseFloat(p[1]),   // x
           parseFloat(p[2]),   // y
           parseFloat(p[3]),   // width
           parseFloat(p[4]),   // height
-        )
+        ]
       case 'size':
-        return size(
+        return [
+          'size', 
           parseInt(p[0], 10), // layer
           parseFloat(p[1]),   // width
           parseFloat(p[2]),   // height
-        )
+        ]
+
       case 'move':
-        return move(
+        return [
+          'move',
           parseInt(p[0], 10), // layer
           parseFloat(p[1]),   // x
           parseFloat(p[2]),   // y
-        )
+        ]
       case 'start':
-        return start(
+        return [
+          'start',
           parseInt(p[0], 10), // layer
           parseFloat(p[1]),   // x
           parseFloat(p[2]),   // y
-        )
+        ]
       case 'close':
-        return close(
+        return [
+          'close',
           parseInt(p[0], 10), // layer
-        )
+        ]
       case 'push':
-        return push(
+        return [
+          'push',
           parseInt(p[0], 10), // layer
-        )
+        ]
       case 'pop':
-        return pop(
+        return [
+          'pop',
           parseInt(p[0], 10), // layer
-        )
+        ]
       case 'identity':
-        return identity(
+        return [
+          'identity',
           parseInt(p[0], 10), // layer
-        )
+        ]
       case 'transform':
-        return transform(
+        return [
+          'transform',
           parseInt(p[0], 10), // layer
           parseFloat(p[1]),
           parseFloat(p[2]),
@@ -140,15 +128,17 @@ export namespace ServerInstruction {
           parseFloat(p[4]),
           parseFloat(p[5]),
           parseFloat(p[6]),
-        )
+        ]
       case 'line':
-        return line(
+        return [
+          'line',
           parseInt(p[0], 10), // layer
           parseFloat(p[1]),   // x
           parseFloat(p[2]),   // y
-        )
+        ]
       case 'curve':
-        return curve(
+        return [
+          'curve',
           parseInt(p[0], 10), // layer
           parseFloat(p[1]),
           parseFloat(p[2]),
@@ -156,11 +146,12 @@ export namespace ServerInstruction {
           parseFloat(p[4]),
           parseFloat(p[5]),
           parseFloat(p[6]),
-        )
+        ]
       case 'cstroke':
-        return cstroke(
-          parseInt(p[1], 10), // layer
+        return [
+          'cstroke',
           parseInt(p[0], 10) as ChannelMask,
+          parseInt(p[1], 10), // layer
           parseInt(p[2], 10) as Cap,
           parseInt(p[3], 10) as Join,
           parseFloat(p[4]),   // thickness
@@ -170,39 +161,28 @@ export namespace ServerInstruction {
             parseInt(p[7], 10),   // b
             parseInt(p[8], 10),   // a
           ]
-        )
+        ]
       case 'cfill':
-        return cfill(
-          parseInt(p[1], 10), // layer
+        return [
+          'cfill',
           parseInt(p[0], 10) as ChannelMask,
+          parseInt(p[1], 10), // layer
           [
             parseInt(p[2], 10),   // r
             parseInt(p[3], 10),   // g
             parseInt(p[4], 10),   // b
             parseFloat(p[5]),     // a
           ]
-        )
+        ]
       case 'sync':
-        return sync(
+        return [
+          'sync',
           parseInt(p[0], 10) // t
-        )
+        ]
       default:
         console.error(`Unhandled: ${params}`)
         throw `Unexpected: ${params}`
     }
   }
-
-  export type CanvasCommand = ServerInstruction.Copy
-
-  export type LayerCommand = ServerInstruction.Arc | ServerInstruction.Rect | ServerInstruction.Start | ServerInstruction.Line | ServerInstruction.Size | ServerInstruction.Move | ServerInstruction.Close | ServerInstruction.Identity |
-    ServerInstruction.Transform | ServerInstruction.Push | ServerInstruction.Pop | ServerInstruction.Curve
-  export type LayerPathCompleteCommand = ServerInstruction.Cstroke | ServerInstruction.Cfill
-
 }
 
-export type ServerInstruction =
-  ServerInstruction.Select |
-  ServerInstruction.CanvasCommand |
-  ServerInstruction.LayerCommand |
-  ServerInstruction.LayerPathCompleteCommand |
-  ['sync', number]

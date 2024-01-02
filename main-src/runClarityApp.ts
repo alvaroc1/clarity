@@ -1,14 +1,10 @@
+import path from 'path'
 import Store from 'electron-store'
 import { Tray } from 'electron'
-import path from 'path'
-import { runServer } from './net/runServer'
 import { createSettingsWindow } from '../shared-src/SettingsWindow'
-import { Parser } from '../guacamole/Parser'
-import { createSession } from './createSession'
-import { ServerInstruction } from '../guacamole/ServerInstruction'
-import { ClientInstruction } from '../guacamole/ClientInstruction'
 import { Status } from './Status'
 import { buildContextMenu } from './buildContextMenu'
+import { startServerOnPort } from './startServerOnPort'
 
 const store = new Store<{ port: number, error: string | null }>()
 
@@ -113,40 +109,4 @@ export async function runClarityApp(): Promise<() => Promise<void>> {
     rebuildTrayMenu()
     settingsWindow.close()
   }
-}
-
-async function startServerOnPort (
-  port: number, 
-  {onAddressInUse, onNoAccess}: {onAddressInUse: () => void, onNoAccess: () => void}
-): Promise<() => Promise<void>> {
-  const closeServer = await runServer(
-    port, 
-    async (read, write, close): Promise<void> => {
-      const session = createSession({
-        onClose: () => {
-          close()
-        },
-      })
-
-      await Promise.all([
-        // stream instructions to the session
-        (async function () {
-          for await (const instruction of Parser.parse(read)) {
-            await session.send([ServerInstruction.fromStringArray(instruction)])
-          }
-        })(),
-        // stream session events to the client
-        (async function () {
-          for await (const instruction of session.receive()) {
-            write(ClientInstruction.encode(instruction))
-          }
-        })()
-      ])
-    },
-    {
-      onAddressInUse,
-      onNoAccess
-    }
-  )
-  return closeServer
 }
