@@ -13,8 +13,8 @@ type Sync = [opcode: 'sync', number]
 
 export const ClientInstruction = {
   // export const args = (protocolVersion: string, ...other: string[]): Args => ['args', protocolVersion, ...other]
-  click: (x: number, y: number): Click => ['click', x, y],
-  mousemove: (x: number, y: number): MouseMove => ['mousemove', x, y],
+  // click: (x: number, y: number): Click => ['click', x, y],
+  // mousemove: (x: number, y: number): Mouse => ['mouse', x, y, 0],
 
   mouse: (x: number, y: number, buttons: Set<MouseButton>): Mouse => 
     ['mouse', x, y, [...buttons.values()].reduce((a, b) => a + b, 0)],

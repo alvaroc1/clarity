@@ -3,7 +3,8 @@ import { Layer } from './Layer'
 import { RenderCommand } from '../../guacamole/ServerInstruction'
 import { MouseButton } from '../../drawing/MouseButton'
 import jss from 'jss'
-import { ChannelMask } from '../../drawing/ChannelMask'
+// import { ChannelMask } from '../../drawing/ChannelMask'
+import { assertUnreachable } from '../../util/assertUnreachable'
 
 const classes = jss.createStyleSheet({
   display: {
@@ -54,7 +55,6 @@ export class Display {
     })
     element.addEventListener('mousedown', ev => {
       this.#mouseButtonsPressed = this.#numberToButtonSet(ev.buttons)
-      console.log(this.#mouseButtonsPressed)
       this.#onMouse({
         x: ev.clientX,
         y: ev.clientY,
@@ -125,7 +125,7 @@ export class Display {
 
           const savedCompositeOperation = dstLayer.context.globalCompositeOperation
           switch (cm) {
-            case ChannelMask.SRC:
+            case 'copy':
               // if this is a copy operation, 
               // it's actually better if we clear a rect and use source-over
               // TODO: why?
@@ -133,7 +133,7 @@ export class Display {
               dstLayer.context.globalCompositeOperation = 'source-over'
               break
             default: 
-              dstLayer.context.globalCompositeOperation = ChannelMask.toHtmlCanvasCompositeOperation(cm)
+              dstLayer.context.globalCompositeOperation = cm
               break
           }
 
@@ -203,13 +203,3 @@ export class Display {
     })
   }
 }
-
-const assertUnreachable = (c: never): void => {
-  throw ('UNREACHABLE: ' + c)
-}
-/*
-const assertUnreachable = (c: never): never => {
-  console.log('UNREACHABLE')
-  //throw '!'
-}
-*/

@@ -14,6 +14,7 @@ const log = logger.scope('createSession')
 type Session = {
   send (commands: ServerInstruction[]): Promise<void>
   receive (): AsyncIterable<ClientInstruction>
+  close (): void
 }
 
 export function createSession ({
@@ -21,9 +22,10 @@ export function createSession ({
 } : {
   onClose: () => void
 }): Session {
-  log.info('new session')
   // const incomingChannel = MVar.empty<ServerInstruction[]>()
-  const incomingChannel = boundedQueue<ServerInstruction[]>(100)
+  // TODO: this actually prevents more than max size commands from being on a single frame
+  // since the server will block until the window has processed the commands
+  const incomingChannel = boundedQueue<ServerInstruction[]>(10000)
   const outgoingChannel = MVar.empty<ClientInstruction>()
 
   let win: BrowserWindow | undefined
@@ -35,9 +37,9 @@ export function createSession ({
       }
     },
     async send (commands: ServerInstruction[]) {
-      // log.info('send: ', commands[0][0])
       // if we don't have window yet, extract the size from the first command and create one
       if (!win) {
+        log.info('NO WINDOW, creating')
         const first = commands[0]
         const [command, layer, width, height] = first
         if (command !== 'size' || layer !== 0) {
@@ -49,13 +51,17 @@ export function createSession ({
           width, 
           height,
           async onContentLoaded (win) {
-            log.info('WIN', win)
             for await (const commands of incomingChannel.dequeue()) {
-              if (win.isDestroyed()) break
+              if (win.isDestroyed()) {
+                log.warn('Window destroyed')
+                break
+              }
               win.webContents.send('commands', commands)
             }
           },
-          onSend: async (data) => await outgoingChannel.put(data),
+          async onSend (data) {
+            return await outgoingChannel.put(data)
+          },
           onClose: () => {
             win = undefined
             onClose()
@@ -64,7 +70,7 @@ export function createSession ({
       }
 
       if (commands[0][0] === 'sync') {
-        log.info('commands', 'sync')
+        // log.info('commands', 'sync')
       }
 
       const displayCommands: DisplayCmd[] = []
@@ -80,6 +86,10 @@ export function createSession ({
         }
       }
       await incomingChannel.enqueue(displayCommands)
+    },
+    close () {
+      log.warn('Closing session')
+      win?.close()
     }
   }
 }
@@ -121,10 +131,11 @@ function createBrowserWindow <SendData>({
   ipcMain.on('event', (_, data) => {
     onSend(data)
   })
-  win.loadFile('build/index.html').then(() => onContentLoaded(win))
+  win.loadFile('build/index.html')// .then(() => onContentLoaded(win))
   win.once('ready-to-show', () => {
     log.info('window show')
     win.show()
+    onContentLoaded(win)
   })
   win.on('close', () => {
     log.info('window close')

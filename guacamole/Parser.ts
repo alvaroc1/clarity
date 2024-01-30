@@ -5,9 +5,10 @@
  * size - Collecting the size characters
  * data - Collecting data up to the size collected
  */
+
 enum State {
   size,
-  data
+  data,
 }
 
 const dot = '.'.charCodeAt(0)
@@ -16,7 +17,7 @@ const semi = ';'.charCodeAt(0)
 
 export class Parser {
 
-  static async *parse(buffers: AsyncIterable<Buffer>): AsyncIterable<string[]> {
+  async *parse(buffers: AsyncIterable<Buffer>): AsyncIterable<string[]> {
     let args: string[] = []
     let size = 0
     let sizeChars: number[] = []
@@ -40,7 +41,7 @@ export class Parser {
           }
 
           case State.data: {
-            const biteSize = Math.min(buffer.length, size)
+            const biteSize = Math.min(buffer.length - offset, size)
             data += buffer.toString(undefined, offset, offset + biteSize)
             size -= biteSize
             offset += biteSize
@@ -61,7 +62,8 @@ export class Parser {
                   yield instruction
                   break
                 }
-                default: throw `Unexpected: ${buffer.readUInt8(offset - 1)}`
+                default: 
+                  throw `Unexpected: ${buffer.readUInt8(offset - 1)} - ${args} - ${data} - ${buffer.toString()}`
               }
 
               // go back to reading a size

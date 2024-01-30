@@ -1,6 +1,5 @@
-import { ChannelMask } from '../drawing/ChannelMask'
-import { Cap } from '../drawing/Cap'
-import { Join } from '../drawing/Join'
+// import { ChannelMask } from '../drawing/ChannelMask'
+import { Guacamole } from '../drawing/guacamole'
 import { Rgba } from '../drawing/Rgba'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -10,7 +9,7 @@ type LayerCmd<Opcode extends string, X extends any[]> = Cmd<Opcode, [layer: numb
 
 type Select = Cmd<'select', [protocol: string]>
 type Sync = Cmd<'sync', [number]>
-type Copy = Cmd<'copy', [srclayer: number, sx: number, sy: number, sw: number, sh: number, cm: ChannelMask, dstlayer: number, dx: number, dy: number]>
+type Copy = Cmd<'copy', [srclayer: number, sx: number, sy: number, sw: number, sh: number, cm: GlobalCompositeOperation, dstlayer: number, dx: number, dy: number]>
 type Arc = LayerCmd<'arc', [x: number, y: number, radius: number, start: number, end: number, negative: boolean]>
 type Rect = LayerCmd<'rect', [x: number, y: number, width: number, height: number]>
 type Size = LayerCmd<'size', [width: number, height: number]>
@@ -23,11 +22,11 @@ type Identity = LayerCmd<'identity', []>
 type Transform = LayerCmd<'transform', [number, number, number, number, number, number]>
 type Line = LayerCmd<'line', [x: number, y: number]>
 type Curve = LayerCmd<'curve', [cp1x: number, cp1y: number, cp2x: number, cp2y: number, x: number, y: number]>
-type Cstroke = LayerPathCompleteCmd<'cstroke', [cap: Cap, join: Join, thickness: number, color: Rgba]>
+type Cstroke = LayerPathCompleteCmd<'cstroke', [cap: CanvasLineCap, join: CanvasLineJoin, thickness: number, color: Rgba]>
 type Cfill = LayerPathCompleteCmd<'cfill', [color: Rgba]>
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-type LayerPathCompleteCmd<Opcode extends string, X extends any[]> = Cmd<Opcode, [mask: ChannelMask, layer: number, ...X]>
+type LayerPathCompleteCmd<Opcode extends string, X extends any[]> = Cmd<Opcode, [mask: GlobalCompositeOperation, layer: number, ...X]>
 
 type CanvasCommand = Copy
 type LayerCommand = Arc | Rect | Start | Line | Size | Move | Close | Identity | Transform | Push | Pop | Curve
@@ -41,6 +40,7 @@ export type ServerInstruction = ControlCommand | DisplayCmd
 /** Guacamole command */
 export const ServerInstruction = {
   fromStringArray (params: string[]): ServerInstruction {
+    console.log(params)
     const [opcode, ...p] = params
     switch (opcode) {
       case 'copy':
@@ -51,7 +51,7 @@ export const ServerInstruction = {
           parseFloat(p[2]),   // sy
           parseFloat(p[3]),   // sw
           parseFloat(p[4]),   // sh 
-          parseInt(p[5], 10) as ChannelMask,
+          Guacamole.channelMask(parseInt(p[5], 10)),
           parseInt(p[6], 10), // dstlayer
           parseFloat(p[7]),   // dx
           parseFloat(p[8]),    // dy
@@ -150,10 +150,10 @@ export const ServerInstruction = {
       case 'cstroke':
         return [
           'cstroke',
-          parseInt(p[0], 10) as ChannelMask,
+          Guacamole.channelMask(parseInt(p[0], 10)),
           parseInt(p[1], 10), // layer
-          parseInt(p[2], 10) as Cap,
-          parseInt(p[3], 10) as Join,
+          Guacamole.cap(parseInt(p[2], 10)),
+          Guacamole.join(parseInt(p[3], 10)),
           parseFloat(p[4]),   // thickness
           [
             parseInt(p[5], 10),   // r
@@ -165,7 +165,7 @@ export const ServerInstruction = {
       case 'cfill':
         return [
           'cfill',
-          parseInt(p[0], 10) as ChannelMask,
+          Guacamole.channelMask(parseInt(p[0], 10)),
           parseInt(p[1], 10), // layer
           [
             parseInt(p[2], 10),   // r

@@ -4,7 +4,7 @@ import { Tray } from 'electron'
 import { createSettingsWindow } from '../shared-src/SettingsWindow'
 import { Status } from './Status'
 import { buildContextMenu } from './buildContextMenu'
-import { startServerOnPort } from './startServerOnPort'
+import { ClarityServer } from './ClarityServer'
 
 const store = new Store<{ port: number, error: string | null }>()
 
@@ -41,7 +41,7 @@ export async function runClarityApp(): Promise<() => Promise<void>> {
   const startServer = async () => {
     status = Status.starting
     const port = getPort()
-    const serverClose = await startServerOnPort(
+    const serverClose = await ClarityServer.start(
       port,
       {
         onAddressInUse() {
@@ -68,19 +68,19 @@ export async function runClarityApp(): Promise<() => Promise<void>> {
     return serverClose
   }
 
-  let closeServer = await startServer()
+  let server = await startServer()
 
 
   const restart = async () => {
     // restart
     try {
-      await closeServer()
+      await server.close()
     } catch(e) {
       console.error(e)
     }
     rebuildTrayMenu()
 
-    closeServer = await startServer()
+    server = await startServer()
   }
 
   const handlePortChange = async (newPort: number) => {
@@ -105,7 +105,7 @@ export async function runClarityApp(): Promise<() => Promise<void>> {
   // returns a function to stop the server
   return async () => {
     rebuildTrayMenu()
-    await closeServer()
+    await server.close()
     rebuildTrayMenu()
     settingsWindow.close()
   }

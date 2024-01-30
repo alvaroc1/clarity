@@ -1,6 +1,6 @@
-import { Cap } from '../../drawing/Cap'
-import { Join } from '../../drawing/Join'
-import { ChannelMask } from '../../drawing/ChannelMask'
+// import { Cap } from '../../drawing/Cap'
+// import { Join } from '../../drawing/guacamole'
+// import { ChannelMask } from '../../drawing/ChannelMask'
 import jss from 'jss'
 
 const classes = jss.createStyleSheet({
@@ -58,8 +58,8 @@ export class Layer {
     this.#container = container
   }
 
-  setChannelMask = (mask: ChannelMask): void => {
-    this.#ctx.globalCompositeOperation = ChannelMask.toHtmlCanvasCompositeOperation(mask)
+  setChannelMask = (mask: GlobalCompositeOperation): void => {
+    this.#ctx.globalCompositeOperation = mask
   }
 
   appendChild = (child: Layer): void => {
@@ -93,8 +93,10 @@ export class Layer {
     this.#ctx.lineTo(x, y)
   }
 
-  cstroke = (cap: Cap, join: Join, thickness: number, r: number, g: number, b: number, a: number): void => {
+  cstroke = (cap: CanvasLineCap, join: CanvasLineJoin, thickness: number, r: number, g: number, b: number, a: number): void => {
     this.#ctx.lineWidth = thickness
+    this.#ctx.lineJoin = join
+    this.#ctx.lineCap = cap
     this.#ctx.strokeStyle = 'rgba(' + r + ',' + g + ',' + b + ',' + a / 255.0 + ')'
     this.#ctx.stroke()
     this.#pathClosed = true
