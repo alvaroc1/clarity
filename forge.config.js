@@ -1,30 +1,31 @@
 module.exports = {
-  "packagerConfig": {
-    "appBundleId": "io.devstack.clarity",
-    "name": "Clarity",
-    "executable-name": "clarity",
-    "icon": "clarity.icns",
-    "asar": true,
-    "osxSign": {
-      "identity": "Developer ID Application: Alvaro Carrasco (6ZYU9CDQ6L)",
-      "hardened-runtime": true,
-      "gatekeeper-assess": false,
-      "entitlements": "entitlements.plist",
-      "entitlements-inherit": "entitlements.plist",
-      "signature-flags": "library"
+  'packagerConfig': {
+    'appBundleId': 'io.devstack.clarity',
+    'name': 'Clarity',
+    'executable-name': 'clarity',
+    'icon': 'clarity.icns',
+    'asar': true,
+    'osxSign': {
+      'identity': 'Developer ID Application: Alvaro Carrasco (6ZYU9CDQ6L)',
+      'hardened-runtime': true,
+      'gatekeeper-assess': false,
+      'entitlements': 'entitlements.plist',
+      'entitlements-inherit': 'entitlements.plist',
+      'signature-flags': 'library'
     },
-    "osxNotarize": {
-      "appBundleId": "io.devstack.clarity",
-      "appleId": "simplepic@gmail.com",
-      "appleIdPassword": "vjof-rbqb-iqvl-hqol"
+    'osxNotarize': {
+      'appBundleId': 'io.devstack.clarity',
+      'appleId': 'simplepic@gmail.com',
+      'appleIdPassword': process.env.APPLEID,
+      'teamId': '6ZYU9CDQ6L'
     }
   },
-  "makers": [
+  'makers': [
     {
-      "name": "@electron-forge/maker-dmg",
-      "config": {
+      'name': '@electron-forge/maker-dmg',
+      'config': {
         //"background": "./assets/dmg-background.png",
-        "format": "ULFO"
+        'format': 'ULFO'
       }
     }
   ]

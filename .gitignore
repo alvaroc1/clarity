@@ -12,5 +12,6 @@ build
 !.yarn/releases
 !.yarn/sdks
 !.yarn/versions
+env
 
 Clarity_Development.provisionprofile
